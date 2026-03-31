@@ -2406,6 +2406,34 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
 <!-- SAVE TOAST -->
 <div id="save-toast">✅ 저장 완료!</div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCFr9m3ZRmhchjL1LXh4LuN-_6mgxdboEY",
+    authDomain: "ca-pm-wiki.firebaseapp.com",
+    projectId: "ca-pm-wiki",
+    storageBucket: "ca-pm-wiki.firebasestorage.app",
+    messagingSenderId: "735077524536",
+    appId: "1:735077524536:web:15f13bca1b87fca193f2cd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // 기존 JS에서 사용할 수 있도록 전역 노출
+  window._db          = db;
+  window._doc         = doc;
+  window._getDoc      = getDoc;
+  window._setDoc      = setDoc;
+  window._onSnapshot  = onSnapshot;
+  window._firebaseReady = true;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
 <script>
   // ── PASSWORD MODAL ──
   const EDIT_PASSWORD = 'capm2026'; // ← 비밀번호 여기서 변경 가능
@@ -2672,94 +2700,118 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
     });
     data['recent_updates'] = recentItems;
 
-    localStorage.setItem('ca_pm_data', JSON.stringify(data));
-    toggleEditMode(false);
-    showToast();
-  }
+    if (window._firebaseReady) {
+  const ref = window._doc(window._db, 'wiki', 'main');
+  window._setDoc(ref, { data: JSON.stringify(data), updatedAt: Date.now() })
+    .then(() => { toggleEditMode(false); showToast(); })
+    .catch(e => { alert('저장 실패: ' + e.message); });
+} else {
+  localStorage.setItem('ca_pm_data', JSON.stringify(data));
+  toggleEditMode(false);
+  showToast();
+}
 
-  function loadSaved() {
+function loadSaved() {
+  if (window._firebaseReady) {
+    const ref = window._doc(window._db, 'wiki', 'main');
+
+    // 최초 1회 불러오기
+    window._getDoc(ref).then(snap => {
+      if (snap.exists()) _applyData(JSON.parse(snap.data().data));
+    });
+
+    // 실시간 동기화 — 누군가 저장하면 자동 반영
+    window._onSnapshot(ref, snap => {
+      if (snap.exists() && !document.body.classList.contains('edit-mode')) {
+        _applyData(JSON.parse(snap.data().data));
+      }
+    });
+
+  } else {
+    // Firebase 연결 전 fallback
     const raw = localStorage.getItem('ca_pm_data');
     if (!raw) return;
-    let data;
-    try { data = JSON.parse(raw); } catch(e) { return; }
-    // 버전 불일치 시 이전 데이터 무시 (깨진 데이터 방지)
-    if (data._version !== DATA_VERSION) {
-      localStorage.removeItem('ca_pm_data');
-      return;
-    }
+    try {
+      const data = JSON.parse(raw);
+      if (data._version === DATA_VERSION) _applyData(data);
+    } catch(e) {}
+  }
+}
 
-    // editable cells
-    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
-      const id = el.id || `ce-${i}`;
-      if (!el.id) el.id = id;
-      if (data[id] !== undefined) el.innerHTML = data[id];
-    });
+function _applyData(data) {
+  if (!data || data._version !== DATA_VERSION) return;
 
-    // table rows
-    document.querySelectorAll('tbody').forEach(tbody => {
-      const table = tbody.closest('table');
-      const tableId = table.id;
-      if (!tableId || !data[`rows_${tableId}`]) return;
-      const colCount = table.querySelectorAll('th').length;
-      tbody.innerHTML = '';
-      data[`rows_${tableId}`].forEach(cells => {
-        const tr = document.createElement('tr');
-        tr.className = 'editable-row';
-        cells.forEach(html => {
-          const td = document.createElement('td');
-          td.contentEditable = 'false';
-          td.innerHTML = html;
-          tr.appendChild(td);
-        });
-        const tdDel = document.createElement('td');
-        tdDel.innerHTML = '<button class="del-row-btn" onclick="delRow(this)">✕</button>';
-        tr.appendChild(tdDel);
-        tbody.appendChild(tr);
+  // editable cells
+  document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+    const id = el.id || `ce-${i}`;
+    if (!el.id) el.id = id;
+    if (data[id] !== undefined) el.innerHTML = data[id];
+  });
+
+  // table rows
+  document.querySelectorAll('tbody').forEach(tbody => {
+    const tableId = tbody.closest('table').id;
+    if (!tableId || !data[`rows_${tableId}`]) return;
+    tbody.innerHTML = '';
+    data[`rows_${tableId}`].forEach(cells => {
+      const tr = document.createElement('tr');
+      tr.className = 'editable-row';
+      cells.forEach(html => {
+        const td = document.createElement('td');
+        td.contentEditable = 'false';
+        td.innerHTML = html;
+        tr.appendChild(td);
       });
+      const tdDel = document.createElement('td');
+      tdDel.innerHTML = '<button class="del-row-btn" onclick="delRow(this)">✕</button>';
+      tr.appendChild(tdDel);
+      tbody.appendChild(tr);
     });
+  });
 
-    // file links
-    document.querySelectorAll('.file-links').forEach(fl => {
-      const key = `files_${fl.id}`;
-      if (!data[key]) return;
-      fl.innerHTML = '';
-      data[key].forEach(f => {
-        const a = document.createElement('a');
-        a.className = 'file-link-item';
-        a.href = f.href || '#';
-        a.target = '_blank';
-        a.dataset.name = f.name;
-        a.dataset.desc = f.desc;
-        a.innerHTML = `
-          <span class="file-icon">${f.icon}</span>
-          <div class="file-info">
-            <div class="file-name">${f.name}</div>
-            <div class="file-desc">${f.desc}</div>
-          </div>
-          <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
-          <span class="file-arrow">↗</span>`;
-        fl.appendChild(a);
+  // file links
+  document.querySelectorAll('.file-links').forEach(fl => {
+    const key = `files_${fl.id}`;
+    if (!data[key]) return;
+    fl.innerHTML = '';
+    data[key].forEach(f => {
+      const a = document.createElement('a');
+      a.className = 'file-link-item';
+      a.href = f.href || '#';
+      a.target = '_blank';
+      a.dataset.name = f.name;
+      a.dataset.desc = f.desc;
+      a.innerHTML = `
+        <span class="file-icon">${f.icon}</span>
+        <div class="file-info">
+          <div class="file-name">${f.name}</div>
+          <div class="file-desc">${f.desc}</div>
+        </div>
+        <button class="del-file-btn" onclick="delFile(event,this)">✕</button>
+        <span class="file-arrow">↗</span>`;
+      fl.appendChild(a);
+    });
+  });
+
+  // recent updates
+  if (data['recent_updates'] && data['recent_updates'].length) {
+    const container = document.getElementById('recent-updates');
+    if (container) {
+      container.innerHTML = '';
+      data['recent_updates'].forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'recent-item';
+        if (item.section) div.setAttribute('onclick', item.section);
+        div.innerHTML = `
+          <div class="recent-date">${item.date}</div>
+          <div class="recent-text" style="flex:1;">${item.text}</div>
+          <button class="recent-del-btn" onclick="this.parentElement.remove()"
+            style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>`;
+        container.appendChild(div);
       });
-    });
-
-    // recent updates
-    if (data['recent_updates'] && data['recent_updates'].length) {
-      const container = document.getElementById('recent-updates');
-      if (container) {
-        container.innerHTML = '';
-        data['recent_updates'].forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'recent-item';
-          if (item.section) div.setAttribute('onclick', item.section);
-          div.innerHTML = `
-            <div class="recent-date">${item.date}</div>
-            <div class="recent-text" style="flex:1;">${item.text}</div>
-            <button class="recent-del-btn" onclick="this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>`;
-          container.appendChild(div);
-        });
-      }
     }
   }
+}
 
   function showToast() {
     const t = document.getElementById('save-toast');
