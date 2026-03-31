@@ -1,0 +1,2970 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA PM팀 공지사항</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --sidebar-bg: #fbfaf8;
+    --sidebar-width: 260px;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --accent2: #e07a3a;
+    --accent2-light: #fdf0e6;
+    --text: #1a1a1a;
+    --text-muted: #8a8a8a;
+    --border: #e5e5e0;
+    --tag-a: #d4edda;
+    --tag-a-text: #1e6b3a;
+    --tag-b: #dce8f7;
+    --tag-b-text: #1a4a7a;
+    --card-bg: #ffffff;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07);
+    --edit-highlight: rgba(255, 214, 0, 0.15);
+    --edit-border: #f0c040;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── EDIT MODE BANNER ── */
+  #edit-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 999;
+    background: #fffbe6;
+    border-bottom: 2px solid var(--edit-border);
+    padding: 8px 20px;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #7a5a00;
+  }
+  #edit-banner.visible { display: flex; }
+  #edit-banner strong { font-weight: 700; }
+  #edit-banner .banner-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  body.edit-mode #edit-banner { display: flex; }
+  body.edit-mode { padding-top: 42px; }
+
+  /* EDITABLE ELEMENTS */
+  body.edit-mode [contenteditable="true"] {
+    outline: none;
+    background: var(--edit-highlight);
+    border-radius: 3px;
+    min-width: 20px;
+    cursor: text;
+    padding: 1px 3px;
+  }
+  body.edit-mode [contenteditable="true"]:focus {
+    background: #fff9d6;
+    box-shadow: 0 0 0 2px var(--edit-border);
+  }
+  body.edit-mode .editable-row:hover {
+    background: #fffbe6 !important;
+  }
+
+  /* EDIT TOOLBAR (floating) */
+  #edit-toolbar {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 998;
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: none;
+    gap: 8px;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  body.edit-mode #edit-toolbar { display: flex; }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: top 0.2s;
+  }
+  body.edit-mode #sidebar { top: 42px; }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-title { font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .sidebar-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+
+  .nav-section { margin-bottom: 4px; }
+  .nav-product {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 20px; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    transition: background 0.15s; user-select: none;
+  }
+  .nav-product:hover { background: rgba(0,0,0,0.04); }
+  .nav-product.active { background: var(--accent-light); color: var(--accent); }
+  .nav-product .emoji { font-size: 15px; width: 20px; text-align: center; }
+  .nav-sub { display: none; padding: 0 0 4px 48px; }
+  .nav-section.open .nav-sub { display: block; }
+  .nav-sub-item {
+    display: block; padding: 5px 12px; font-size: 12px;
+    color: var(--text-muted); cursor: pointer; border-radius: 4px;
+    transition: all 0.15s; text-decoration: none;
+  }
+  .nav-sub-item:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+  .nav-sub-item.active { color: var(--accent); font-weight: 500; }
+  .nav-chevron { margin-left: auto; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+  .nav-section.open .nav-chevron { transform: rotate(90deg); }
+
+  /* MAIN */
+  #main { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; }
+
+  .topbar {
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  body.edit-mode .topbar { top: 42px; }
+
+  .topbar-breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .topbar-breadcrumb span { color: var(--text); font-weight: 500; }
+
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .content { padding: 40px 40px 100px; max-width: 900px; }
+
+  /* SECTION */
+  .product-section { display: none; animation: fadeIn 0.2s ease; }
+  .product-section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px; padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-emoji { font-size: 28px; }
+  .section-title { font-size: 22px; font-weight: 700; color: var(--text); }
+  .section-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* CARDS */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; overflow: hidden; box-shadow: var(--shadow); }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: #fafafa; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .card-body { padding: 18px 20px; }
+
+  .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; font-family: 'DM Mono', monospace; letter-spacing: 0.03em; }
+  .tag-a { background: var(--tag-a); color: var(--tag-a-text); }
+  .tag-b { background: var(--tag-b); color: var(--tag-b-text); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: #f5f5f3; padding: 8px 12px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0f0ec; color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf8; }
+
+  /* NOTICE */
+  .notice { border-left: 3px solid var(--accent); background: var(--accent-light); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 12px; color: #1e5038; margin: 10px 0; }
+  .notice.warning { border-left-color: var(--accent2); background: var(--accent2-light); color: #7a3a10; }
+
+  /* KEY MESSAGES */
+  .key-messages { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .key-msg { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .key-msg-label { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 4px; }
+  .key-msg-text { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+  /* HISTORY */
+  .history-label { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 16px; margin-bottom: 6px; }
+
+  /* DATE ENTRY */
+  .date-entry { border-left: 2px solid var(--border); margin-left: 8px; padding-left: 16px; margin-bottom: 20px; position: relative; }
+  .date-entry::before { content: ''; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; position: absolute; left: -5px; top: 4px; }
+  .date-entry-label { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+
+  /* CROSS REF */
+  .cross-ref { background: #f0f4ff; border: 1px dashed #aac0e8; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #2a4a8a; display: flex; align-items: center; gap: 8px; }
+  .cross-ref a { color: var(--accent); font-weight: 600; text-decoration: none; cursor: pointer; }
+  .cross-ref a:hover { text-decoration: underline; }
+
+  /* FILE LINKS */
+  .file-links { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+  .file-link-item {
+    display: flex; align-items: center; gap: 10px;
+    background: #f8f9fa; border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px;
+    text-decoration: none; color: var(--text);
+    transition: all 0.15s; font-size: 13px;
+  }
+  .file-link-item:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .file-link-item .file-icon { font-size: 18px; flex-shrink: 0; }
+  .file-link-item .file-info { flex: 1; }
+  .file-link-item .file-name { font-weight: 600; font-size: 13px; }
+  .file-link-item .file-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .file-link-item .file-arrow { color: var(--text-muted); font-size: 12px; }
+
+  /* ADD FILE BUTTON (edit mode only) */
+  .add-file-btn {
+    display: none;
+    align-items: center; gap: 6px;
+    background: none; border: 1px dashed var(--border);
+    border-radius: 6px; padding: 8px 14px;
+    font-size: 12px; color: var(--text-muted);
+    cursor: pointer; width: 100%; margin-top: 4px;
+    transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
+  }
+  .add-file-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  body.edit-mode .add-file-btn { display: flex; }
+
+  /* ADD ROW BUTTON (edit mode only) */
+  .add-row-btn {
+    display: none;
+    width: 100%; text-align: left; padding: 6px 12px;
+    background: none; border: none; border-top: 1px dashed var(--border);
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s;
+  }
+  .add-row-btn:hover { background: #fffbe6; color: var(--accent); }
+  body.edit-mode .add-row-btn { display: block; }
+
+  /* DELETE ROW (edit mode only) */
+  .del-row-btn {
+    display: none;
+    background: none; border: none;
+    color: #ccc; cursor: pointer; padding: 0 4px;
+    font-size: 14px; line-height: 1;
+    transition: color 0.15s;
+  }
+  .del-row-btn:hover { color: #e05555; }
+  body.edit-mode .del-row-btn { display: inline-block; }
+
+  /* DELETE FILE (edit mode only) */
+  .del-file-btn {
+    display: none;
+    background: none; border: none;
+    color: #ccc; cursor: pointer; padding: 0 4px; font-size: 14px;
+  }
+  .del-file-btn:hover { color: #e05555; }
+  body.edit-mode .del-file-btn { display: inline-block; }
+
+  /* ROOM GRID */
+  .room-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+  .room-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+  .room-num { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .room-people { font-size: 11px; color: var(--text); line-height: 1.6; }
+  .room-leader { font-weight: 600; }
+
+  /* PILLS */
+  .pill { display: inline-block; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; margin: 2px 2px; }
+  .pill.orange { background: var(--accent2-light); color: var(--accent2); }
+
+  /* 편집모드 본문 텍스트 */
+  body.edit-mode .card-body p,
+  body.edit-mode .card-body li,
+  body.edit-mode .notice {
+    outline: none;
+    cursor: text;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  body.edit-mode .card-body p:hover,
+  body.edit-mode .card-body li:hover,
+  body.edit-mode .notice:hover {
+    background: var(--edit-highlight);
+  }
+  body.edit-mode .card-body p:focus,
+  body.edit-mode .card-body li:focus,
+  body.edit-mode .notice:focus {
+    background: #fff9d6;
+    box-shadow: 0 0 0 2px var(--edit-border);
+  }
+
+  /* ARCHIVE SECTION */
+  .archive-section .section-desc { color: #9a8a6a; }
+  .archive-section .section-header { border-bottom-color: #e8dfc8; }
+  .archive-section .card { border-color: #e8dfc8; background: #fdfcf8; }
+  .archive-section .card-header { background: #f9f5ec; }
+
+  /* YEAR TABS */
+  .year-tab {
+    flex: 1; padding: 6px 4px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text-muted); font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+  }
+  .year-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .year-tab:hover:not(.active) { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+  /* BRAND GROUP LABEL */
+  .nav-group-label {
+    padding: 10px 20px 4px;
+    font-size: 10px; font-weight: 700;
+    color: var(--text-muted); letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .nav-group-label:first-child { border-top: none; margin-top: 0; }
+
+  /* RECENT ITEMS */
+  .recent-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 16px; border-bottom: 1px solid #f0f0ec;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item:hover { background: var(--accent-light); }
+  .recent-date {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--text-muted); white-space: nowrap; padding-top: 1px;
+    min-width: 72px;
+  }
+  .recent-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  p { line-height: 1.7; margin: 6px 0; font-size: 13px; }
+  h4 { font-size: 13px; font-weight: 700; color: var(--text); margin: 14px 0 8px; }
+  ul { padding-left: 18px; }
+  li { font-size: 13px; line-height: 1.8; color: var(--text); }
+  code { font-family: 'DM Mono', monospace; background: #f5f5f3; padding: 2px 6px; border-radius: 4px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none; font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-edit { background: #1a1a1a; color: #fff; }
+  .btn-edit:hover { background: #333; }
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-save:hover { background: #235a40; }
+  .btn-cancel { background: #f0f0ec; color: var(--text); }
+  .btn-cancel:hover { background: #e5e5e0; }
+  .btn-white { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-white:hover { background: rgba(255,255,255,0.25); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 28px;
+    width: 480px; max-width: 95vw;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .modal label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
+    outline: none; transition: border 0.15s;
+  }
+  .modal input:focus, .modal select:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+  .modal-tip { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+
+  /* SAVE TOAST */
+  #save-toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; z-index: 9999;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  #save-toast.show { opacity: 1; }
+
+  @media (max-width: 700px) {
+    #sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    #sidebar.open { transform: none; }
+    #main { margin-left: 0; }
+    .content { padding: 24px 20px 100px; }
+    .key-messages { grid-template-columns: 1fr; }
+    .room-grid { grid-template-columns: repeat(2, 1fr); }
+    .topbar { padding: 12px 20px; }
+    #menu-btn { display: block !important; }
+  }
+  #menu-btn { display: none; background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
+
+  /* ── 다크 모드 ── */
+  body.dark-mode {
+    --bg: #1a1a1a; --sidebar-bg: #222; --card-bg: #2a2a2a;
+    --text: #e8e8e8; --text-muted: #888; --border: #3a3a3a;
+    --accent-light: #1a3d2b; --accent2-light: #3d2410;
+    --tag-a: #1a3d2b; --tag-a-text: #6fcf97;
+    --tag-b: #1a2a3d; --tag-b-text: #7eb6f0;
+    --shadow: 0 1px 4px rgba(0,0,0,0.3);
+    --edit-highlight: rgba(255,214,0,0.08);
+  }
+  body.dark-mode table th { background: #333; }
+  body.dark-mode tr:hover td { background: #2f2f2f; }
+  body.dark-mode .topbar { background: var(--sidebar-bg); border-bottom-color: var(--border); }
+  body.dark-mode .card { background: var(--card-bg); }
+  body.dark-mode .card-header { background: #252525; }
+  body.dark-mode .notice { background: #1a3d2b; color: #a8e6c0; }
+  body.dark-mode .notice.warning { background: #3d2410; color: #f0b080; }
+  body.dark-mode .file-link-item { background: #2f2f2f; }
+  body.dark-mode .file-link-item:hover { background: var(--accent-light); }
+  body.dark-mode .recent-item:hover { background: var(--accent-light); }
+  body.dark-mode .key-msg { background: #252525; }
+  body.dark-mode .room-card { background: #252525; }
+  body.dark-mode .nav-group-label { color: #666; }
+  body.dark-mode .modal { background: #2a2a2a; color: var(--text); }
+  body.dark-mode .modal input, body.dark-mode .modal select { background: #333; color: var(--text); border-color: var(--border); }
+  body.dark-mode #edit-banner { background: #3a3000; color: #f0d060; border-color: #7a6000; }
+
+  /* ── NEW 배지 ── */
+  .nav-badge {
+    display: inline-block; background: #e53935; color: #fff;
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+    border-radius: 10px; margin-left: 4px; letter-spacing: 0.03em;
+    vertical-align: middle; line-height: 1.6;
+  }
+  .nav-badge-dot {
+    display: inline-block; width: 7px; height: 7px;
+    background: #e53935; border-radius: 50%;
+    margin-left: 5px; vertical-align: middle;
+  }
+  .badges-hidden .nav-badge,
+  .badges-hidden .nav-badge-dot { display: none !important; }
+
+  /* ── 설정 패널 ── */
+  #settings-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; padding: 4px 6px; color: var(--text-muted);
+    transition: color 0.15s; margin-left: auto;
+  }
+  #settings-btn:hover { color: var(--text); }
+  #settings-panel {
+    display: none; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin: 8px 12px; padding: 12px 14px;
+    box-shadow: var(--shadow);
+  }
+  #settings-panel.open { display: block; }
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .toggle-switch {
+    position: relative; width: 36px; height: 20px; cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: #ccc; border-radius: 20px; transition: 0.2s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute;
+    width: 14px; height: 14px; left: 3px; bottom: 3px;
+    background: white; border-radius: 50%; transition: 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  /* ── 모바일 하단 네비 ── */
+  #mobile-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--sidebar-bg); border-top: 1px solid var(--border);
+    z-index: 200; padding: 6px 0 env(safe-area-inset-bottom, 6px);
+  }
+  #mobile-nav .mob-tabs {
+    display: flex; justify-content: space-around;
+  }
+  #mobile-nav .mob-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 6px; background: none; border: none;
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px; color: var(--text-muted); transition: color 0.15s;
+  }
+  #mobile-nav .mob-tab .mob-icon { font-size: 20px; }
+  #mobile-nav .mob-tab.active { color: var(--accent); font-weight: 700; }
+  @media (max-width: 700px) { #mobile-nav { display: block; } }
+
+  /* 최근 본 섹션 패널 */
+  #recent-panel {
+    display: none; padding: 20px;
+  }
+  #recent-panel.active { display: block; }
+  #recent-panel h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-muted); }
+  .recent-history-item {
+    padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; margin-bottom: 8px; cursor: pointer;
+    font-size: 13px; transition: background 0.15s;
+  }
+  .recent-history-item:hover { background: var(--accent-light); }
+  .recent-history-item .rh-time { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  /* ── 반응형 테이블 (모바일 카드) ── */
+  @media (max-width: 700px) {
+    table.responsive thead { display: none; }
+    table.responsive tr {
+      display: block; background: var(--card-bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      margin-bottom: 10px; padding: 8px 0; box-shadow: var(--shadow);
+    }
+    table.responsive td {
+      display: flex; padding: 6px 14px;
+      border-bottom: 1px solid #f0f0ec; font-size: 12px;
+      gap: 8px; align-items: flex-start;
+    }
+    table.responsive td:last-child { border-bottom: none; }
+    table.responsive td::before {
+      content: attr(data-label);
+      min-width: 80px; font-weight: 700; color: var(--text-muted);
+      font-size: 11px; flex-shrink: 0; padding-top: 1px;
+    }
+    table.responsive td:last-child::before { content: ''; min-width: 0; }
+  }
+
+  /* ── FAQ 아코디언 ── */
+  .faq-list { margin: 12px 0; }
+  .faq-item { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+  .faq-q {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
+    background: var(--card-bg); color: var(--text); transition: background 0.15s;
+    gap: 8px; user-select: none;
+  }
+  .faq-q:hover { background: var(--accent-light); }
+  .faq-chevron { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+  .faq-item.open .faq-chevron { transform: rotate(90deg); }
+  .faq-a {
+    display: none; padding: 14px 16px; font-size: 13px; line-height: 1.7;
+    color: var(--text); background: #fafaf8; border-top: 1px solid var(--border);
+  }
+  .faq-item.open .faq-a { display: block; }
+  body.dark-mode .faq-a { background: #252525; }
+  body.dark-mode .faq-q:hover { background: var(--accent-light); }
+
+  /* USP 카드 */
+  .usp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .usp-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .usp-icon { font-size: 22px; flex-shrink: 0; }
+  .usp-text { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .usp-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; color: var(--text); }
+  @media (max-width: 700px) { .usp-grid { grid-template-columns: 1fr; } }
+
+  /* 마진율 하이라이트 */
+  .margin-highlight { color: var(--accent); font-weight: 700; }
+  .margin-best { color: #e07a3a; font-weight: 700; }
+  .summary-table-wrap { overflow-x: auto; }
+  .summary-bar {
+    display: inline-block; height: 10px; border-radius: 5px; background: var(--accent);
+    margin-right: 6px; vertical-align: middle; min-width: 4px;
+  }
+
+  /* ── 캘린더 뷰 ── */
+.calendar-wrap { margin-bottom: 20px; }
+.cal-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.cal-tab {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px;
+  font-weight: 600; cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-muted);
+  font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s;
+}
+.cal-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 타임라인 */
+.timeline { padding: 4px 0; }
+.tl-item {
+  display: flex; gap: 14px; padding: 10px 0;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-date {
+  min-width: 68px; font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text-muted); padding-top: 2px;
+  text-align: right;
+}
+.tl-date.today { color: var(--accent); font-weight: 700; }
+.tl-date.past  { color: #bbb; }
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  margin-top: 4px; flex-shrink: 0;
+}
+.tl-body { flex: 1; }
+.tl-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.tl-title.past { color: #bbb; text-decoration: line-through; }
+.tl-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tl-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 10px; margin-left: 6px;
+  vertical-align: middle;
+}
+.tl-no-event {
+  text-align: center; padding: 24px 0;
+  font-size: 13px; color: var(--text-muted);
+}
+
+/* 색상 뱃지 */
+.dot-promo   { background: #e07a3a; }
+.dot-seminar { background: #2d6a4f; }
+.dot-deploy  { background: #3a7abf; }
+.dot-deadline{ background: #e53935; }
+.badge-promo   { background: #fdf0e6; color: #e07a3a; }
+.badge-seminar { background: #e8f5ee; color: #2d6a4f; }
+.badge-deploy  { background: #dce8f7; color: #1a4a7a; }
+.badge-deadline{ background: #fdecea; color: #e53935; }
+
+body.dark-mode .tl-item { border-bottom-color: var(--border); }
+body.dark-mode .cal-tab { background: #2a2a2a; }
+</style>
+</head>
+<body>
+
+<!-- EDIT BANNER -->
+<div id="edit-banner" class="visible" style="display:none">
+  ✏️ <strong>편집 모드 활성화</strong> — 표 내용과 본문 텍스트를 클릭해서 바로 수정하세요.
+  <div class="banner-actions">
+    <button class="btn btn-save" onclick="saveAll()">💾 저장</button>
+    <button class="btn btn-cancel" onclick="toggleEditMode(false)">✕ 취소</button>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal" style="width:360px;">
+    <div class="modal-title">🔐 편집 모드</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">CA PM 담당자만 편집할 수 있습니다.<br>비밀번호를 입력해주세요.</p>
+    <label>비밀번호</label>
+    <input type="password" id="pw-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')confirmPw()">
+    <p id="pw-error" style="color:#e05555;font-size:12px;margin-top:6px;display:none;">❌ 비밀번호가 올바르지 않습니다.</p>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closePwModal()">취소</button>
+      <button class="btn btn-save" onclick="confirmPw()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILE LINK MODAL -->
+<div class="modal-overlay" id="file-modal">
+  <div class="modal">
+    <div class="modal-title">📎 파일 링크 추가</div>
+    <label>파일 종류</label>
+    <select id="modal-type">
+      <option value="xlsx">📊 엑셀 (.xlsx)</option>
+      <option value="pdf">📄 PDF</option>
+      <option value="pptx">📑 PowerPoint</option>
+      <option value="link">🔗 기타 링크</option>
+    </select>
+    <label>파일/링크 이름</label>
+    <input type="text" id="modal-name" placeholder="예) 병원 마진 계산기 2026-03">
+    <label>SharePoint/Teams 링크 URL</label>
+    <input type="text" id="modal-url" placeholder="https://...sharepoint.com/...">
+    <p class="modal-tip">💡 Teams에서 파일 우클릭 → "링크 복사"로 URL을 가져오세요.</p>
+    <label>설명 (선택)</label>
+    <input type="text" id="modal-desc" placeholder="예) 특판 기념 병원별 마진 계산용">
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn btn-save" onclick="confirmAddFile()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div style="display:flex;align-items:center;">
+      <div>
+        <div class="sidebar-title">CA PM팀</div>
+        <div class="sidebar-subtitle">공지사항 위키</div>
+      </div>
+      <button id="settings-btn" onclick="toggleSettings()" title="설정">⚙️</button>
+    </div>
+    <!-- 설정 패널 -->
+    <div id="settings-panel">
+      <div class="setting-row">
+        <span>🌙 다크 모드</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-dark" onchange="toggleDark(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <span>🔴 NEW 배지 표시</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-badges" checked onchange="toggleBadges(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <!-- 연도 탭 -->
+    <div style="display:flex;gap:6px;margin-top:12px;">
+      <button id="tab-2026" class="year-tab active" onclick="switchYear('2026')">2026 현재</button>
+      <button id="tab-2025" class="year-tab" onclick="switchYear('2025')">2025 아카이브</button>
+    </div>
+  </div>
+
+  <!-- 2026 사이드바 -->
+  <div class="sidebar-nav" id="nav-2026">
+    <!-- CSO: 엘랑코 -->
+    <div class="nav-group-label">CSO · Elanco</div>
+    <div class="nav-section" data-section="crp">
+      <div class="nav-product" onclick="toggleSection('crp')">
+        <span class="emoji">💊</span> CRP (크레델리오플러스) <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('crp',0)">운영방침</a>
+        <a class="nav-sub-item" onclick="showSection('crp',1)">6가지 핵심 업데이트</a>
+        <a class="nav-sub-item" onclick="showSection('crp',2)">대응 자료</a>
+        <a class="nav-sub-item" onclick="showSection('crp',3)">셀아웃 툴</a>
+        <a class="nav-sub-item" onclick="showSection('crp',4)">그래클럽</a>
+        <a class="nav-sub-item" onclick="showSection('crp',5)">엘랑코 영업리포트</a>
+        <a class="nav-sub-item" onclick="showSection('crp',6)">경쟁사 대응 FAQ <span class="nav-badge">NEW</span></a>
+        <a class="nav-sub-item" onclick="showSection('crp',7)">가격/마진 비교 <span class="nav-badge">NEW</span></a>
+      </div>
+    </div>
+    <!-- 자사 -->
+    <div class="nav-group-label">자사 · 녹십자수의약품</div>
+    <div class="nav-section" data-section="selinox">
+      <div class="nav-product" onclick="toggleSection('selinox')">
+        <span class="emoji">💉</span> 셀리녹스 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('selinox',0)">갈변화 현상 교육자료</a>
+        <a class="nav-sub-item" onclick="showSection('selinox',1)">5.5% 쿠폰 선지급</a>
+        <a class="nav-sub-item" onclick="showSection('selinox',2)">3월 프로모션</a>
+      </div>
+    </div>
+    <div class="nav-section" data-section="pimomedin">
+      <div class="nav-product" onclick="toggleSection('pimomedin')">
+        <span class="emoji">❤️</span> 피모메딘 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('pimomedin',0)">3월 프로모션</a>
+      </div>
+    </div>
+    <div class="nav-section" data-section="caniflumx">
+      <div class="nav-product" onclick="toggleSection('caniflumx')">
+        <span class="emoji">🐕</span> 캐니플루-맥스 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('caniflumx',0)">2026 혜택 운영방식</a>
+      </div>
+    </div>
+    <div class="nav-section" data-section="definit">
+      <div class="nav-product" onclick="toggleSection('definit')">
+        <span class="emoji">🔬</span> 데피니트 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('definit',0)">샘플링 피드백</a>
+      </div>
+    </div>
+    <div class="nav-section" data-section="intervery">
+      <div class="nav-product" onclick="toggleSection('intervery')">
+        <span class="emoji">🦷</span> 인터베리알파 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('intervery',0)">2분기 샘플링</a>
+        <a class="nav-sub-item" onclick="showSection('intervery',1)">치아모형 배포</a>
+        <a class="nav-sub-item" onclick="showSection('intervery',2)">증례모집 컨테스트 →</a>
+      </div>
+    </div>
+    <div class="nav-section" data-section="novat">
+      <div class="nav-product" onclick="toggleSection('novat')">
+        <span class="emoji">💊</span> 노바트 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('novat',0)">증례모집 컨테스트 →</a>
+      </div>
+    </div>
+    <!-- PSO: 셀론텍 -->
+    <div class="nav-group-label">PSO · 셀론텍</div>
+    <div class="nav-section" data-section="regenguard">
+      <div class="nav-product" onclick="toggleSection('regenguard')">
+        <span class="emoji">💉</span> 리젠가드-S <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('regenguard',0)">런칭 프로모션</a>
+      </div>
+    </div>
+    <!-- CSO: KLINIX -->
+    <div class="nav-group-label">CSO · KLINIX</div>
+    <div class="nav-section" data-section="liverox">
+      <div class="nav-product" onclick="toggleSection('liverox')">
+        <span class="emoji">🫀</span> 리버록스 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('liverox',0)">CSO 출시 안내</a>
+        <a class="nav-sub-item" onclick="showSection('liverox',1)">온라인 교육</a>
+      </div>
+    </div>
+    <!-- CSO: MSD -->
+    <div class="nav-group-label">CSO · MSD</div>
+    <div class="nav-section" data-section="msd">
+      <div class="nav-product" onclick="toggleSection('msd')">
+        <span class="emoji">🏥</span> MSD 제품 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('msd',0)">비달타/레벤타 품절 안내</a>
+      </div>
+    </div>
+    <!-- 협력사 -->
+    <div class="nav-group-label">협력사</div>
+    <div class="nav-section" data-section="mybrown">
+      <div class="nav-product" onclick="toggleSection('mybrown')">
+        <span class="emoji">🐾</span> 마이브라운 (보험) <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('mybrown',0)">영업 활동 방향</a>
+      </div>
+    </div>
+    <!-- 공통 -->
+    <div class="nav-group-label">공통</div>
+    <div class="nav-section" data-section="common">
+      <div class="nav-product" onclick="toggleSection('common')">
+        <span class="emoji">📢</span> 팀 전체 공지 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('common',0)">영업 회의</a>
+        <a class="nav-sub-item" onclick="showSection('common',1)">프로모션 공지</a>
+        <a class="nav-sub-item" onclick="showSection('common',2)">WMS 반품 절차</a>
+        <a class="nav-sub-item" onclick="showSection('common',3)">증례모집 컨테스트</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2025 아카이브 사이드바 -->
+  <div class="sidebar-nav" id="nav-2025" style="display:none;">
+    <!-- CSO: 엘랑코 -->
+    <div class="nav-group-label">CSO · Elanco</div>
+    <div class="nav-section" data-section="a-gallifrant">
+      <div class="nav-product" onclick="toggleSection('a-gallifrant')">
+        <span class="emoji">💊</span> 갈리프란트 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('a-gallifrant',0)">품절 안내 및 대응</a>
+        <a class="nav-sub-item" onclick="showSection('a-gallifrant',1)">FAQ / 샘플 현황</a>
+      </div>
+    </div>
+    <!-- CSO: KLINIX -->
+    <div class="nav-group-label">CSO · KLINIX</div>
+    <div class="nav-section" data-section="a-liverox">
+      <div class="nav-product" onclick="toggleSection('a-liverox')">
+        <span class="emoji">🫀</span> 리버록스 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('a-liverox',0)">2025 출시 / 교육</a>
+      </div>
+    </div>
+    <!-- 공통 -->
+    <div class="nav-group-label">공통</div>
+    <div class="nav-section" data-section="a-common">
+      <div class="nav-product" onclick="toggleSection('a-common')">
+        <span class="emoji">📢</span> 팀 전체 공지 <span class="nav-chevron">▶</span>
+      </div>
+      <div class="nav-sub">
+        <a class="nav-sub-item" onclick="showSection('a-common',0)">FASAVA / 플래닝컨퍼런스</a>
+        <a class="nav-sub-item" onclick="showSection('a-common',1)">12월 마케팅 공지</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 모바일 하단 네비 -->
+<div id="mobile-nav">
+  <div class="mob-tabs">
+    <button class="mob-tab active" id="mob-home" onclick="mobileNav('home')">
+      <span class="mob-icon">🏠</span>홈
+    </button>
+    <button class="mob-tab" id="mob-recent" onclick="mobileNav('recent')">
+      <span class="mob-icon">🕐</span>최근
+    </button>
+  </div>
+</div>
+<div id="main">
+  <div class="topbar">
+    <button id="menu-btn" onclick="toggleMobile()">☰</button>
+    <div class="topbar-breadcrumb" id="breadcrumb">
+      CA PM팀 공지사항 · <span>항목을 선택해주세요</span>
+    </div>
+    <div class="topbar-actions">
+      <!-- 편집 버튼: 기본 숨김, Ctrl+Shift+E 또는 비번 입력 후에만 표시 -->
+      <button class="btn btn-edit" onclick="openPwModal()" id="edit-btn" style="display:none;">✏️ 편집</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 홈 -->
+    <div class="product-section active" id="sec-home">
+
+      <!-- 헤더 -->
+      <div style="margin-bottom:32px;">
+        <div style="font-size:22px; font-weight:700; margin-bottom:6px;">📋 CA PM팀 공지사항</div>
+        <div style="font-size:13px; color:var(--text-muted);">제품/브랜드별 영업 자료 · 공지 · 파일 링크를 한 곳에서 관리합니다</div>
+      </div>
+
+      <!-- 사용 안내 -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">📌 사용 안내</div></div>
+        <div class="card-body" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+          <div style="text-align:center; padding:12px 8px;">
+            <div style="font-size:28px; margin-bottom:8px;">📁</div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:4px;">① 제품 선택</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">왼쪽 메뉴에서<br>제품/브랜드를 클릭</div>
+          </div>
+          <div style="text-align:center; padding:12px 8px; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+            <div style="font-size:28px; margin-bottom:8px;">📂</div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:4px;">② 주제 선택</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">대응자료 · 셀아웃 · 회의<br>등 주제를 선택</div>
+          </div>
+          <div style="text-align:center; padding:12px 8px;">
+            <div style="font-size:28px; margin-bottom:8px;">📄</div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:4px;">③ 내용 확인</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">날짜별 내용 확인 및<br>파일 링크 바로 열기</div>
+          </div>
+        </div>
+        <div style="padding:12px 20px; background:#fafaf8; border-top:1px solid var(--border); display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="tag tag-a">🔄 업데이트형</span>
+            <span style="font-size:12px; color:var(--text-muted);">조건·방향 등 항상 최신 내용 유지</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="tag tag-b">📅 누적형</span>
+            <span style="font-size:12px; color:var(--text-muted);">배포·회의 등 날짜별로 쌓임</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 최근 업데이트 (전체 폭) -->
+      <div class="card" id="recent-updates-card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <div class="card-title">🕐 최근 업데이트</div>
+          <span style="font-size:11px;color:var(--text-muted);">항목 클릭 시 해당 페이지로 이동</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="recent-updates">
+              <div class="recent-item" onclick="showSection('intervery',0)">
+                <div class="recent-date">2026-04-03</div>
+                <div class="recent-text" style="flex:1;">인터베리알파 2분기 샘플링 — 거래처 리스트 제출 마감</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('regenguard',0)">
+                <div class="recent-date">2026-04-01</div>
+                <div class="recent-text" style="flex:1;">리젠가드-S 런칭 프로모션 온그린몰 오픈</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('crp',5)">
+                <div class="recent-date">2026-03-24</div>
+                <div class="recent-text" style="flex:1;">CRP 엘랑코 영업리포트 — 건국대 봄 세미나/광고 일정 공유</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('common',2)">
+                <div class="recent-date">2026-03-23</div>
+                <div class="recent-text" style="flex:1;">WMS 반품 절차 변경 — 판매일자 컬럼 신규 추가</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('common',0)">
+                <div class="recent-date">2026-03-19</div>
+                <div class="recent-text" style="flex:1;">3월 CA사업부 영업회의 (YBM연수원 1박2일)</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('crp',3)">
+                <div class="recent-date">2026-03-11</div>
+                <div class="recent-text" style="flex:1;">CRP 셀아웃 툴 SET 배포 일정 안내 (3~4월)</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('common',1)">
+                <div class="recent-date">2026-03-05</div>
+                <div class="recent-text" style="flex:1;">53주년 페이백 쿠폰 발행 완료 (총 143처)</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('crp',1)">
+                <div class="recent-date">2026-02-09</div>
+                <div class="recent-text" style="flex:1;">CRP 6가지 핵심 업데이트 즉시 적용 (CRM 가이드 포함)</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('msd',0)">
+                <div class="recent-date">2026-01-30</div>
+                <div class="recent-text" style="flex:1;">MSD 비달타 품절 해제 / 레벤타 3월 공급 재개 예정</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+              <div class="recent-item" onclick="showSection('crp',0)">
+                <div class="recent-date">2026-01-02</div>
+                <div class="recent-text" style="flex:1;">2026 CRP 운영방침 공유 — 그래클럽 혜택 구조 안내</div>
+                <button class="recent-del-btn" onclick="event.stopPropagation();this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>
+              </div>
+          </div>
+          <button class="add-row-btn" id="add-recent-btn" style="display:none;" onclick="addRecentItem()">+ 업데이트 추가</button>
+        </div>
+      </div>
+
+      <!-- 담당자 (전체 폭) -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">👤 담당자</div></div>
+        <div class="card-body" style="padding:0;">
+          <table id="tbl-contacts" style="margin:0;">
+            <thead><tr><th>이름</th><th>담당 제품/영역</th><th>연락처</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">김유민</td><td contenteditable="false">마케팅실 전반 / CRP / 셀리녹스</td><td contenteditable="false">010-5062-6121</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">최하나</td><td contenteditable="false">리젠가드-S / MSD / 리버록스</td><td contenteditable="false">010-3903-5390</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">차재성</td><td contenteditable="false">인터베리알파 / 노바트 / CA PM</td><td contenteditable="false">010-3187-8381</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-contacts')">+ 담당자 추가</button>
+        </div>
+      </div>
+
+<!-- 캘린더 뷰 -->
+<div class="card calendar-wrap">
+  <div class="card-header">
+    <div class="card-title">📅 일정 캘린더</div>
+    <span style="font-size:11px;color:var(--text-muted);" id="cal-range-label"></span>
+  </div>
+  <div class="card-body">
+    <div class="cal-tabs">
+      <button class="cal-tab active" onclick="calSwitch('week', this)">이번 주</button>
+      <button class="cal-tab" onclick="calSwitch('month', this)">이번 달</button>
+      <button class="cal-tab" onclick="calSwitch('all', this)">전체 예정</button>
+    </div>
+    <div class="timeline" id="cal-timeline"></div>
+  </div>
+</div>
+
+      <!-- 편집 안내 -->
+      <div class="notice" style="font-size:12px;">
+        🔐 내용 수정이 필요한 <strong>CA PM 담당자</strong>는 우측 상단 <strong>✏️ 편집</strong> 버튼을 눌러 비밀번호 입력 후 편집하세요. 수정 후 <strong>💾 저장</strong>을 누르면 이 브라우저에 저장됩니다.
+      </div>
+
+    </div>
+
+    <!-- ─── CRP 운영방침 (0) ─── -->
+    <div class="product-section" id="sec-crp-0">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 2026 운영방침</div><div class="section-desc">연간 전략 및 혜택 구조</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">2026 CRP 운영방침</div><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">2026-01-02 · 김유민</span></div>
+        <div class="card-body">
+          <div class="notice">상반기, 특히 1분기는 ST 방어와 연간 목표 달성을 위한 선점 구간. 선제적·집중적 활동 필수</div>
+          <h4>혜택 구조</h4>
+          <table id="tbl-crp0-policy">
+            <thead><tr><th>구분</th><th>조건</th><th>혜택</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">상시 (non그래클럽)</td><td contenteditable="false">번들 10팩↑ / 30팩↑</td><td contenteditable="false">5% / 10% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">신규 고객 (26년 첫 구매)</td><td contenteditable="false">-</td><td contenteditable="false">첫 구매 5% 페이백 + POP/샘플아웃</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">그래클럽 (25H2 100만원↑)</td><td contenteditable="false">1팩부터</td><td contenteditable="false">15% / Green 20% / 드로탈(100T) / 엘랑코 VVIP 자동가입</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">그래클럽 신규 (Q1 한정)</td><td contenteditable="false">1분기 초도 100만원↑</td><td contenteditable="false">즉시 그래클럽 적용</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">그래클럽 유지</td><td contenteditable="false">상반기 누적 380만원↑(+VAT)</td><td contenteditable="false">그래클럽 자격 유지</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">1분기 추가혜택 ①</td><td contenteditable="false">200만원↑(+VAT)</td><td contenteditable="false">5% 페이백 (최대 5만원)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">1분기 추가혜택 ②</td><td contenteditable="false">400만원↑(+VAT)</td><td contenteditable="false">5% 페이백 (최대 20만원) 또는 20만원 선물 택1</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-crp0-policy')">+ 행 추가</button>
+          <h4>📎 관련 파일</h4>
+          <div class="file-links" id="files-crp0-policy"></div>
+          <button class="add-file-btn" onclick="openModal('files-crp0-policy')">+ 파일 링크 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 6가지 핵심 업데이트 (1) ─── -->
+    <div class="product-section" id="sec-crp-1">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 6가지 핵심 업데이트</div><div class="section-desc">2026-02-09부터 즉시 적용</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-02-09 적용</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">6가지 핵심 업데이트 안내</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <table id="tbl-crp1-updates">
+              <thead><tr><th>#</th><th>항목</th><th>핵심 내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">①</td><td contenteditable="false">수의사용 리플렛 업데이트 (6P→4P)</td><td contenteditable="false">대표 메시지: "초고속 방어! 크레델리오 플러스" / 바베시아 예방 설명 추가 / 자택 200부 배포 완료</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">②</td><td contenteditable="false">디테일 포인트 업데이트</td><td contenteditable="false">Key Message: 가장 빠른 초기 사멸 속도(Fastest Speed of Kill) → 바베시아 예방 / 기호성→복약편의성 / 콜리 포함 안전</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">③</td><td contenteditable="false">CRM 작성 가이드 추가 (중요)</td><td contenteditable="false">홍보제품: CRP 선택 / 구분: '신규모객' 또는 '기존고객' 반드시 입력 (띄어쓰기 포함 동일 단어) / 오작성 시 활동 인정 불가</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">④</td><td contenteditable="false">3월 특판 할인행사</td><td contenteditable="false">그래클럽: 1~29팩 15% / 30팩↑ 30% / 신규: 10~29팩 5% / 30팩↑ 30% / 일반: 10~29팩 5% / 30팩↑ 10%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">⑤</td><td contenteditable="false">그래클럽 700처 달성 핵심과제</td><td contenteditable="false">현재 300처 관리 + 신규 400처 모객 필수 / 3~4월 초 집중 모집</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">⑥</td><td contenteditable="false">53주년 페이백 프로모션</td><td contenteditable="false">1~2월 누적 300만원↑: 53,000원 / 500만원↑: 106,000원 / 사용기간: ~2026.06.30</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-crp1-updates')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-crp1-updates"></div>
+            <button class="add-file-btn" onclick="openModal('files-crp1-updates')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 대응 자료 (2) ─── -->
+    <div class="product-section" id="sec-crp-2">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 대응 자료</div><div class="section-desc">조에티스 대응 메시지 및 마진 계산기</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">현재 내용</div>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: <span class="editable" contenteditable="false">2026-03</span></span>
+        </div>
+        <div class="card-body">
+          <div class="notice warning">⚠️ INTERNAL 자료 — 사전 내용 숙지 후 현장 디테일 및 영업활동 시 활용</div>
+          <h4>배포 내용</h4>
+          <table id="tbl-crp2-main">
+            <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">조에티스 영업 대응</td><td contenteditable="false">부정적 영업 움직임 일부 지역 포착 → CA_CRP 채널 &gt; GCVP CA Sales 게시물 참고</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">마진 계산기</td><td contenteditable="false">특판 기념 병원 마진 계산기 엑셀 파일 함께 배포</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-crp2-main')">+ 행 추가</button>
+          <h4>📎 관련 파일</h4>
+          <div class="file-links" id="files-crp2">
+            <a class="file-link-item" href="#" target="_blank" data-name="병원 마진 계산기 2026-03" data-desc="특판 기념 병원별 마진 계산용">
+              <span class="file-icon">📊</span>
+              <div class="file-info"><div class="file-name">병원 마진 계산기 2026-03</div><div class="file-desc">특판 기념 병원별 마진 계산용</div></div>
+              <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+              <span class="file-arrow">↗</span>
+            </a>
+          </div>
+          <button class="add-file-btn" onclick="openModal('files-crp2')">+ 파일 링크 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-crp2-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-03</td><td contenteditable="false">최초 등록 — 조에티스 대응 메시지 + 마진 계산기 배포</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-crp2-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 셀아웃 툴 (3) ─── -->
+    <div class="product-section" id="sec-crp-3">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 셀아웃 툴</div><div class="section-desc">배포 회차별 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03 배포</div>
+        <div class="card">
+          <div class="card-body">
+            <div class="notice">툴별 소량 묶음 배송 'SET 형식' 운영 — 거래처 상황에 맞게 선택 활용</div>
+            <table id="tbl-crp3-main">
+              <thead><tr><th>날짜</th><th>배포 물품</th><th>비고</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">3월 20일 (금)</td><td contenteditable="false">약봉투 / 배변봉투</td><td contenteditable="false">그래클럽 100처 우선 배포</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">3월 24일 (화)</td><td contenteditable="false">아크릴POP매대 / 보호자안내문(떡메모지)</td><td contenteditable="false">신규 입점 또는 원내 노출 필요 병원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4월 (예정)</td><td contenteditable="false">구충수첩 / 스티커</td><td contenteditable="false">보호자 복약관리 및 재방문 유도 목적</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-crp3-main')">+ 행 추가</button>
+            <div class="notice" style="margin-top:12px;">주소 확인 마감: <strong>3월 20일 점심 12시</strong> — 변동 없으면 ✅ / 변동 있으면 개별 전달</div>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-crp3"></div>
+            <button class="add-file-btn" onclick="openModal('files-crp3')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 그래클럽 (4) ─── -->
+    <div class="product-section" id="sec-crp-4">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 그래클럽</div><div class="section-desc">조건 변경 시 업데이트</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">현재 조건</div>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: <span class="editable" contenteditable="false">2026-03</span></span>
+        </div>
+        <div class="card-body">
+          <div class="notice warning">⚠️ 전 항목 <strong>VAT 포함 기준</strong>으로 통일</div>
+          <table id="tbl-crp4-main">
+            <thead><tr><th>구분</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">가입 조건</td><td contenteditable="false">1분기 내 100만원 이상 구매</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">연간 조건</td><td contenteditable="false">440만원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">상반기 커트라인</td><td contenteditable="false">160만원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">혜택 (연간 880만원)</td><td contenteditable="false">외식 상품권 50만원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">혜택 (1분기 440만원)</td><td contenteditable="false">페이백 쿠폰 20만원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">목표</td><td contenteditable="false">상반기 최소 600처 달성 → 3월 및 4월 초 집중 모집</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-crp4-main')">+ 행 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-crp4-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-03</td><td contenteditable="false">전 항목 VAT 포함 기준 통일</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-crp4-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 엘랑코 영업리포트 (5) ─── -->
+    <div class="product-section" id="sec-crp-5">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">CRP · 엘랑코 영업리포트</div><div class="section-desc">광고/홍보/협업 활동 현황</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03 리포트</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">엘랑코 영업 지원 및 광고/홍보 활동 현황</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <h4>주요 성과</h4>
+            <table id="tbl-crp5-main">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">검색량 급증</td><td contenteditable="false">2/8 동물농장 TV 광고 후 넥스가드 대비 77% 수준(30 vs 39) 추격</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">강원대 Junior 모임</td><td contenteditable="false">세미나 후 4월까지 CRP 전체 매출 4,000만원 달성 클로징 딜 진행 중</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">현장 즉시 발주</td><td contenteditable="false">24시 아이동물메디컬센터 세미나 직후 약 130만원 현장 주문 발생</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">3/10 SBS 모닝와이드</td><td contenteditable="false">충현동물병원 강종일 원장님 인터뷰 (약 7분) 송출 — 유튜브 업로드 예정</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-crp5-main')">+ 행 추가</button>
+            <h4>세미나/분회 일정</h4>
+            <table id="tbl-crp5-seminar">
+              <thead><tr><th>날짜</th><th>행사</th><th>규모</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">3월 26일 (목)</td><td contenteditable="false">남양주시분회</td><td contenteditable="false">약 25명</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4월 1일 (수)</td><td contenteditable="false">구로구분회</td><td contenteditable="false">약 20명</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4월 5일 (일)</td><td contenteditable="false">건국대 임상동문회 봄 세미나</td><td contenteditable="false">약 60명</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4월 중</td><td contenteditable="false">동대문구분회</td><td contenteditable="false">일정 조율 중</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-crp5-seminar')">+ 행 추가</button>
+            <h4>보호자 광고 일정</h4>
+            <table id="tbl-crp5-ads">
+              <thead><tr><th>날짜</th><th>구분</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">3/31</td><td contenteditable="false">보호자 교육</td><td contenteditable="false">중앙일보 기고 (전남대 신성식 교수) — 병원 대기실 비치 권장</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4/1</td><td contenteditable="false">광고 런칭</td><td contenteditable="false">셀레뷰 AI 광고 (한승연) — 초소형 사이즈/급여 편의성 강조, 소형견 타겟</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4/23</td><td contenteditable="false">웨비나</td><td contenteditable="false">아이해듀 웨비나 (바베시아 위험성) — 온그린몰 사전 설문 진행</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">5월 (예정)</td><td contenteditable="false">광고 제작</td><td contenteditable="false">토니안 모델 — '가장 빠른 진드기 사멸 효과' 컨셉</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-crp5-ads')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-crp5"></div>
+            <button class="add-file-btn" onclick="openModal('files-crp5')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 셀리녹스 갈변화 (0) ─── -->
+    <div class="product-section" id="sec-selinox-0">
+      <div class="section-header">
+        <span class="section-emoji">💉</span>
+        <div><div class="section-title">셀리녹스 · 갈변화 현상 교육자료</div><div class="section-desc">현장 문의 대응 참고용</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-01-22 교육</div>
+        <div class="card">
+          <div class="card-body">
+            <p>제품개발실 진만님 진행 — 셀리녹스-주 갈변화 현상 관련 교육 자료 PDF 공유</p>
+            <p>현장 문의 대응 시 참고용 가이드로 활용</p>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-selinox0"></div>
+            <button class="add-file-btn" onclick="openModal('files-selinox0')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 셀리녹스 5.5% 쿠폰 (1) ─── -->
+    <div class="product-section" id="sec-selinox-1">
+      <div class="section-header">
+        <span class="section-emoji">💉</span>
+        <div><div class="section-title">셀리녹스 · 5.5% 쿠폰 선지급</div><div class="section-desc">26년 1~2월 한시 운영</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-01~02 한시 운영</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">셀리녹스 5.5% 비정기 쿠폰 선지급 · 사후기안</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 최하나</span></div>
+          <div class="card-body">
+            <div class="notice warning">⚠️ 26년 1~2월 한시 / 3월 정기 프로모션(20% D.C)과 중복 적용 불가 / 사용기한: 2026.02.28</div>
+            <table id="tbl-selinox1-main">
+              <thead><tr><th>단계</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">① 쿠폰 선지급</td><td contenteditable="false">소장님 1인당 5.5% 비정기 쿠폰 5매 선발급 (영업관리팀 이혜림)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">② 현장 활용</td><td contenteditable="false">매출 잠재력 높은 동물병원 선별 → 거래처당 쿠폰 1매씩 자율 활용</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">③ 사후 기안</td><td contenteditable="false">5매 지급 완료 후 → 거래처 5곳 리스트 취합 → 1회 기안으로 일괄 상신</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-selinox1-main')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 셀리녹스 3월 프로모션 (2) ─── -->
+    <div class="product-section" id="sec-selinox-2">
+      <div class="section-header">
+        <span class="section-emoji">💉</span>
+        <div><div class="section-title">셀리녹스 · 3월 프로모션</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03-01 ~ 03-31</div>
+        <div class="card">
+          <div class="card-body">
+            <table id="tbl-selinox2-main">
+              <thead><tr><th>조건</th><th>할인율</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">3병 이상 구매</td><td contenteditable="false">10% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">10병 이상 구매</td><td contenteditable="false">20% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-selinox2-main')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 피모메딘 3월 프로모션 (0) ─── -->
+    <div class="product-section" id="sec-pimomedin-0">
+      <div class="section-header">
+        <span class="section-emoji">❤️</span>
+        <div><div class="section-title">피모메딘 · 3월 프로모션</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03-01 ~ 04-30</div>
+        <div class="card">
+          <div class="card-body">
+            <table id="tbl-pimo0-main">
+              <thead><tr><th>조건</th><th>할인율</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">4통 이상 구매</td><td contenteditable="false">50% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-pimo0-main')">+ 행 추가</button>
+            <div class="notice" style="margin-top:10px;">서울대학교 임상동문회 공동구매(3/3~4/2): 5통↑ 구매 시 50% 할인 적용</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 캐니플루-맥스 혜택 (0) ─── -->
+    <div class="product-section" id="sec-caniflumx-0">
+      <div class="section-header">
+        <span class="section-emoji">🐕</span>
+        <div><div class="section-title">캐니플루-맥스 · 2026 혜택 운영방식</div><div class="section-desc">반기그룹 혜택 1가지로 단순화</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">2026 혜택 구조</div><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: 2026-01-26 · 최하나</span></div>
+        <div class="card-body">
+          <div class="notice">혜택 축소 목적 아님 — 운영 효율성 및 지속 가능한 거래 구조 구축 목적</div>
+          <h4>2026 운영 혜택 (반기그룹 1가지로 일원화)</h4>
+          <table id="tbl-cani0-main">
+            <thead><tr><th>구분</th><th>조건</th><th>혜택</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">반기그룹 혜택 (유지)</td><td contenteditable="false">반기 60 vial 이상 구매</td><td contenteditable="false">다음 반기 수량 상관없이 상시 30% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">2025 총판 프로모션 (종료)</td><td contenteditable="false">25년 100 vial 이상 구매 605처</td><td contenteditable="false">26년 상반기까지 30% 할인 유지 (이후 반기 혜택으로 전환)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">100 vial 약정 프로모션 (종료)</td><td contenteditable="false">-</td><td contenteditable="false">26년부터 진행하지 않음</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-cani0-main')">+ 행 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-cani0-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-01-26</td><td contenteditable="false">2026 혜택 구조 단순화 공지 (반기그룹 1가지로 일원화)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-cani0-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 리버록스 CSO 출시 (0) ─── -->
+    <div class="product-section" id="sec-liverox-0">
+      <div class="section-header">
+        <span class="section-emoji">🫀</span>
+        <div><div class="section-title">리버록스 · CSO 출시 안내</div><div class="section-desc">CSO · KLINIX | 간 보조제</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-12-08 출시</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">리버록스 CSO 신규 제품 출시</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 최하나</span></div>
+          <div class="card-body">
+            <table id="tbl-liver0-main">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">제품명</td><td contenteditable="false">리버록스 (수의사처방 간 보조제)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">예산 공장 입고</td><td contenteditable="false">2025-12-02 완료</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">온그린몰 판매 오픈</td><td contenteditable="false">2025-12-08 (월) — 롤링 배너 홍보 진행</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">실물 교육자료 배송</td><td contenteditable="false">12/10 (수) 출고 — 자택 주소로 발송 (리플렛 2P + 책자 10P)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-liver0-main')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-liver0"></div>
+            <button class="add-file-btn" onclick="openModal('files-liver0')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 리버록스 온라인 교육 (1) ─── -->
+    <div class="product-section" id="sec-liverox-1">
+      <div class="section-header">
+        <span class="section-emoji">🫀</span>
+        <div><div class="section-title">리버록스 · 온라인 교육</div><div class="section-desc">CSO · KLINIX</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-12-15 (월) 09:00~10:00</div>
+        <div class="card">
+          <div class="card-body">
+            <table id="tbl-liver1-main">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">교육 주제</td><td contenteditable="false">리버록스 특징 및 작용 기전</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">교육 진행</td><td contenteditable="false">김성호 수의학박사</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">진행 방식</td><td contenteditable="false">Zoom 온라인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">Zoom 링크</td><td contenteditable="false">https://us06web.zoom.us/j/84893687794 / ID: 848 9368 7794 / 암호: 353399</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">Zoom 문의</td><td contenteditable="false">클리닉스 류성환 매니저 (010-5257-4851)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-liver1-main')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MSD 비달타/레벤타 (0) ─── -->
+    <div class="product-section" id="sec-msd-0">
+      <div class="section-header">
+        <span class="section-emoji">🏥</span>
+        <div><div class="section-title">MSD 제품 · 비달타/레벤타 품절 안내</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">공급 현황</div><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: 2026-01-30 · 최하나</span></div>
+        <div class="card-body">
+          <table id="tbl-msd0-main">
+            <thead><tr><th>제품</th><th>현황</th><th>비고</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">레벤타 액 (30mL)</td><td contenteditable="false">현 재고 27EA → 품절 예정</td><td contenteditable="false">2026년 3월 중 공급 재개 예정</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">비달타정 10mg (30T)</td><td contenteditable="false">품절 해제 — 공급 지속</td><td contenteditable="false">신규 물량 2/4(수) 입고 완료</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-msd0-main')">+ 행 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-msd0-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-01-08</td><td contenteditable="false">최초 공지 — 2개 제품 품절 임박 안내</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">2026-01-30</td><td contenteditable="false">업데이트 — 비달타 10mg 품절 해제, 공급 지속 / 레벤타 품절 예정 유지</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-msd0-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 마이브라운 ─── -->
+    <div class="product-section" id="sec-mybrown-0">
+      <div class="section-header">
+        <span class="section-emoji">🐾</span>
+        <div><div class="section-title">마이브라운 · 영업 활동 방향</div><div class="section-desc">협력사 · 보험사 | 방향 변경 시 업데이트</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">현재 방향</div>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: <span class="editable" contenteditable="false">2026-03</span></span>
+        </div>
+        <div class="card-body">
+          <h4>핵심 영업 메시지</h4>
+          <div class="key-messages">
+            <div class="key-msg"><div class="key-msg-label">🟢 Zero-Risk</div><div class="key-msg-text editable" contenteditable="false">원장님 손해 없음, 비용 부담 0원</div></div>
+            <div class="key-msg"><div class="key-msg-label">💰 Extra Profit</div><div class="key-msg-text editable" contenteditable="false">11만원 수익 (건강검진 3.3만원 + 원장님 병원 가입 7.7만원 광고비)</div></div>
+            <div class="key-msg"><div class="key-msg-label">🏆 First-Mover</div><div class="key-msg-text editable" contenteditable="false">"이 지역 원장님이 처음" 또는 "인근 거점 병원은 이미 다 하고 있음" 강조</div></div>
+            <div class="key-msg"><div class="key-msg-label">🎯 Convenience</div><div class="key-msg-text editable" contenteditable="false">'차트 세팅'만 해두면 보호자 요청 시 빠르고 간편하게 대응</div></div>
+          </div>
+          <h4>문제점 및 개선</h4>
+          <table id="tbl-my0-main">
+            <thead><tr><th>구분</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">현황</td><td contenteditable="false">보험 상세 설명 → 원장님이 '보험 설계사'처럼 느끼거나 거부감 발생</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">개선</td><td contenteditable="false">보험 설명 배제 → 수익성 + 지역 내 선점(FOMO) 강조하는 라포 기반 간결한 영업으로 전환</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-my0-main')">+ 행 추가</button>
+          <h4>📎 관련 파일</h4>
+          <div class="file-links" id="files-my0"></div>
+          <button class="add-file-btn" onclick="openModal('files-my0')">+ 파일 링크 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-my0-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-03</td><td contenteditable="false">최초 등록</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-my0-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 리젠가드-S ─── -->
+    <div class="product-section" id="sec-regenguard-0">
+      <div class="section-header">
+        <span class="section-emoji">💉</span>
+        <div><div class="section-title">리젠가드-S · 런칭 프로모션</div><div class="section-desc">PSO · 셀론텍 | 월별 프로모션 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-04 런칭 프로모션</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">기본 정보</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 최하나</span></div>
+          <div class="card-body">
+            <table id="tbl-rg0-info">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">온그린몰 오픈</td><td contenteditable="false">4월 1일 (수)~</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">초도 물량</td><td contenteditable="false">100 ea (예산 공장 입고 완료)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">유효기간</td><td contenteditable="false">3년 (국내 유일 허가)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">정가</td><td contenteditable="false">66,000원 (VAT 포함)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">처방 수가</td><td contenteditable="false">160,000원 이상</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">회당 순수익</td><td contenteditable="false">약 100,000원 (수익률 167%)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-rg0-info')">+ 행 추가</button>
+            <h4>4월 프로모션 단가표</h4>
+            <table id="tbl-rg0-promo">
+              <thead><tr><th>수량</th><th>조건</th><th>단가</th><th>결제 총액</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">1개</td><td contenteditable="false">정가</td><td contenteditable="false">66,000원</td><td contenteditable="false">66,000원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">3개</td><td contenteditable="false">2+1 (33%)</td><td contenteditable="false">44,000원</td><td contenteditable="false">132,000원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">6개</td><td contenteditable="false">4+2 (33%)</td><td contenteditable="false">44,000원</td><td contenteditable="false">264,000원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">9개</td><td contenteditable="false">6+3 (33%)</td><td contenteditable="false">44,000원</td><td contenteditable="false">396,000원</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-rg0-promo')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-rg0"></div>
+            <button class="add-file-btn" onclick="openModal('files-rg0')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 데피니트 ─── -->
+    <div class="product-section" id="sec-definit-0">
+      <div class="section-header">
+        <span class="section-emoji">🔬</span>
+        <div><div class="section-title">데피니트 · 샘플링 피드백</div><div class="section-desc">회차별 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03</div>
+        <div class="card">
+          <div class="card-body">
+            <p>샘플링 피드백 파일 리마인드 메일 발송 완료</p>
+            <p>궁금한 점은 <strong>마케팅실 김유민</strong>에게 개별 연락</p>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-def0"></div>
+            <button class="add-file-btn" onclick="openModal('files-def0')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 인터베리알파 2분기 샘플링 (0) ─── -->
+    <div class="product-section" id="sec-intervery-0">
+      <div class="section-header">
+        <span class="section-emoji">🦷</span>
+        <div><div class="section-title">인터베리알파 · 2분기 샘플링</div><div class="section-desc">스케일링 환자 대상 IBA 샘플링 프로그램</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026 2분기 (4~6월)</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">2분기 IBA 샘플링 프로그램</div><span style="font-size:11px;color:var(--text-muted);">담당: CA PM 차재성</span></div>
+          <div class="card-body">
+            <div class="notice">담당 거래처 3곳 · 병원당 3개체 · 총 9케이스 / 스케일링 환자에게 IBA 처방 후 2주 뒤 원장님 직접 효과 확인</div>
+            <h4>일정</h4>
+            <table id="tbl-iv0-sample">
+              <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">4월 3일 (금)</td><td contenteditable="false">거래처 리스트 제출 마감</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">4월 13일 (월)</td><td contenteditable="false">패키지 발송</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">6월 말</td><td contenteditable="false">최종 점검 방문 + 피드백 수집</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-iv0-sample')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-iv0-sample"></div>
+            <button class="add-file-btn" onclick="openModal('files-iv0-sample')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 인터베리알파 치아모형 (1) ─── -->
+    <div class="product-section" id="sec-intervery-1">
+      <div class="section-header">
+        <span class="section-emoji">🦷</span>
+        <div><div class="section-title">인터베리알파 · 치아모형 배포</div><div class="section-desc">1회성 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-04</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">고양이 치아모형 배포</div><span style="font-size:11px;color:var(--text-muted);">담당: CA PM팀 차재성</span></div>
+          <div class="card-body">
+            <p>4월 중 다량 구매 거래처 대상 배포 예정</p>
+            <h4>배포 방식 투표</h4>
+            <table id="tbl-iv1-main">
+              <thead><tr><th>옵션</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">👍</td><td contenteditable="false">소장님들 통해 담당 거래처에 배포</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">❤️</td><td contenteditable="false">대상 병원으로 직접 발송</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-iv1-main')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 인터베리알파 증례모집 (2) ─── -->
+    <div class="product-section" id="sec-intervery-2">
+      <div class="section-header">
+        <span class="section-emoji">🦷</span>
+        <div><div class="section-title">인터베리알파 · 증례모집 컨테스트</div></div>
+      </div>
+      <div class="cross-ref">📌 인터베리알파 + 노바트 공동 해당 — <a onclick="goToCommon()">공통 &gt; 증례모집 컨테스트</a> 참고</div>
+    </div>
+
+    <!-- ─── 노바트 ─── -->
+    <div class="product-section" id="sec-novat-0">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">노바트 · 증례모집 컨테스트</div></div>
+      </div>
+      <div class="cross-ref">📌 인터베리알파 + 노바트 공동 해당 — <a onclick="goToCommon()">공통 &gt; 증례모집 컨테스트</a> 참고</div>
+    </div>
+
+
+    <!-- ─── 공통: 영업 회의 (0) ─── -->
+    <div class="product-section" id="sec-common-0">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · 영업 회의</div><div class="section-desc">월별 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03 CA사업부 영업회의</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">기본 정보</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <table id="tbl-cm0-info">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">장소</td><td contenteditable="false">경기도 화성시 정남면 세자로 317 YBM연수원 4층 소강의실 12번</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">일정</td><td contenteditable="false">3월 19일 (목) 13:00~18:00 / 3월 20일 (금) 09:00~13:30</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">형태</td><td contenteditable="false">1박 2일 (저녁 식사 + 숙박)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">와이파이</td><td contenteditable="false">!ybm0509</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-cm0-info')">+ 행 추가</button>
+            <h4 style="margin-top:14px;">방 배정표</h4>
+            <div class="notice" style="margin-bottom:12px;">3인 / 2인 1조 · <strong>첫 번째 사람이 리더 (방 키 관리)</strong> · 강의실 키: 김유민 보관</div>
+            <div class="room-grid">
+              <div class="room-card"><div class="room-num">343호</div><div class="room-people"><span class="room-leader">이민수</span><br>안용태</div></div>
+              <div class="room-card"><div class="room-num">323호</div><div class="room-people"><span class="room-leader">강재표</span><br>이시우 · 김우중</div></div>
+              <div class="room-card"><div class="room-num">324호</div><div class="room-people"><span class="room-leader">이찬우</span><br>박국진 · 허성재</div></div>
+              <div class="room-card"><div class="room-num">325호</div><div class="room-people"><span class="room-leader">최은택</span><br>박현성 · 정규진</div></div>
+              <div class="room-card"><div class="room-num">326호</div><div class="room-people"><span class="room-leader">김정수</span><br>민준기</div></div>
+              <div class="room-card"><div class="room-num">327호</div><div class="room-people"><span class="room-leader">차재성</span><br>황성재</div></div>
+              <div class="room-card"><div class="room-num">328호</div><div class="room-people"><span class="room-leader">김유민</span><br>이민주 · 김정은</div></div>
+              <div class="room-card"><div class="room-num">329호</div><div class="room-people"><span class="room-leader">최하나</span><br>조나은 · 강나연</div></div>
+              <div class="room-card"><div class="room-num">330호</div><div class="room-people"><span class="room-leader">천정민</span><br>심세하 · 이유진</div></div>
+            </div>
+            <h4>📎 자료</h4>
+            <div class="file-links" id="files-cm0">
+              <a class="file-link-item" href="#" target="_blank" data-name="3월 영업회의 아젠다 최종본" data-desc="2026-03-19 회의 아젠다">
+                <span class="file-icon">📄</span>
+                <div class="file-info"><div class="file-name">3월 영업회의 아젠다 최종본</div><div class="file-desc">2026-03-19 회의 아젠다</div></div>
+                <button class="del-file-btn" onclick="delFile(event, this)">✕</button><span class="file-arrow">↗</span>
+              </a>
+            </div>
+            <button class="add-file-btn" onclick="openModal('files-cm0')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 공통: 프로모션 공지 (1) ─── -->
+    <div class="product-section" id="sec-common-1">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · 프로모션 공지</div><div class="section-desc">전사 프로모션 누적</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2026-03 프로모션</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">3월 프로모션 및 서울대 임상동문회 공동구매</div><span style="font-size:11px;color:var(--text-muted);">담당: 영업관리팀 정은미</span></div>
+          <div class="card-body">
+            <table id="tbl-cm1-promo">
+              <thead><tr><th>제품</th><th>기간</th><th>조건 및 할인율</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">셀리녹스</td><td contenteditable="false">3/1~3/31</td><td contenteditable="false">3병↑ 10% / 10병↑ 20%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">피모메딘</td><td contenteditable="false">3/1~4/30</td><td contenteditable="false">4통↑ 50%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">CRP (그래클럽)</td><td contenteditable="false">2/26~3/31</td><td contenteditable="false">1~29팩 15% / 30팩↑ 30%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">CRP (신규/일반)</td><td contenteditable="false">2/26~3/31</td><td contenteditable="false">10~29팩 5% / 30팩↑ 30%(신규) or 10%(일반)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-cm1-promo')">+ 행 추가</button>
+            <div class="history-label">53주년 페이백 프로모션 (1~2월)</div>
+            <table id="tbl-cm1-payback">
+              <thead><tr><th>구분</th><th>조건</th><th>혜택</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">페이백 ①</td><td contenteditable="false">1~2월 누적 300만원↑</td><td contenteditable="false">53,000원 쿠폰 (97처)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">페이백 ②</td><td contenteditable="false">1~2월 누적 500만원↑</td><td contenteditable="false">106,000원 쿠폰 (46처) / 사용기간 ~2026.06.30</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-cm1-payback')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-cm1"></div>
+            <button class="add-file-btn" onclick="openModal('files-cm1')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 공통: WMS 반품 절차 (2) ─── -->
+    <div class="product-section" id="sec-common-2">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · WMS 반품 절차</div><div class="section-desc">판매일자 컬럼 신규 추가</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">반품요청 작성 방법</div><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: 2026-03-23 · 영업관리팀 정은미</span></div>
+        <div class="card-body">
+          <div class="notice warning">⚠️ WMS 기능 개선으로 '판매일자' 컬럼 신규 추가 — 비고란에 판매일자 기재 방식 폐지</div>
+          <table id="tbl-wms0-main">
+            <thead><tr><th>구분</th><th>판매일자</th><th>비고란</th><th>첨부</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">3개월 이내</td><td contenteditable="false">입력 필수</td><td contenteditable="false">작성 안함</td><td contenteditable="false">발송 필수</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">유효일자 6개월 임박/경과</td><td contenteditable="false">입력 필수</td><td contenteditable="false">"(XXX, 사진첨부)" 필수</td><td contenteditable="false">사진 2장 필수</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-wms0-main')">+ 행 추가</button>
+          <div class="notice" style="margin-top:10px;">기준 미준수 시 반품 처리 지연 가능</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 공통: 증례모집 컨테스트 (3) ─── -->
+    <div class="product-section" id="sec-common-3">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · 증례모집 컨테스트</div><div class="section-desc">인터베리알파 + 노바트 공동</div></div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">현재 내용</div>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">최신: 2026-03</span>
+        </div>
+        <div class="card-body">
+          <table id="tbl-cm3-main">
+            <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">증례 제출 마감</td><td contenteditable="false">2026년 4월 30일 (수)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">참가자 전원</td><td contenteditable="false">스타벅스 쿠폰 1만원권 → 5월 초 지급 예정</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              <tr class="editable-row"><td contenteditable="false">추첨 상품</td><td contenteditable="false">15만원 상당 → 5월 중 지급 예정</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-cm3-main')">+ 행 추가</button>
+          <div class="history-label">변경 이력</div>
+          <table id="tbl-cm3-hist">
+            <thead><tr><th>날짜</th><th>내용</th><th style="width:30px"></th></tr></thead>
+            <tbody>
+              <tr class="editable-row"><td contenteditable="false">2026-03</td><td contenteditable="false">최초 등록</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addRow('tbl-cm3-hist')">+ 행 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         CRP 신규 섹션 (crp-6, crp-7)
+    ══════════════════════════════════════ -->
+
+    <!-- ─── CRP 경쟁사 대응 FAQ (6) ─── -->
+    <div class="product-section" id="sec-crp-6">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div>
+          <div class="section-title">CRP · 경쟁사 대응 FAQ</div>
+          <div class="section-desc">CSO · Elanco | 현장 반론 대응 가이드</div>
+        </div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+
+      <!-- USP 4가지 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">⭐ CRP 핵심 경쟁 우위 (USP)</div></div>
+        <div class="card-body">
+          <div class="usp-grid">
+            <div class="usp-card">
+              <span class="usp-icon">🏆</span>
+              <div>
+                <div class="usp-title">가장 작은 크기</div>
+                <div class="usp-text">시중 내외부 구충제 중 최소 사이즈<br><strong>CRP &lt; NS &lt; ST</strong></div>
+              </div>
+            </div>
+            <div class="usp-card">
+              <span class="usp-icon">⚡</span>
+              <div>
+                <div class="usp-title">가장 빠른 진드기 사멸</div>
+                <div class="usp-text"><strong>CRP 4~8h</strong> / ST 8~12h / NS 24h<br>바베시아 매개 예방에 결정적</div>
+              </div>
+            </div>
+            <div class="usp-card">
+              <span class="usp-icon">🪱</span>
+              <div>
+                <div class="usp-title">편충 예방 가능</div>
+                <div class="usp-text">ST의 목시덱틴은 편충 커버 ❌<br>CRP만 편충 예방 ✅</div>
+              </div>
+            </div>
+            <div class="usp-card">
+              <span class="usp-icon">💰</span>
+              <div>
+                <div class="usp-title">높은 병원 마진</div>
+                <div class="usp-text">NS 대비 평균 마진율 <strong>+10~14%p</strong><br>그래클럽 적용 시 +17%p</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 아코디언 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">❓ 현장 FAQ — 클릭하면 답변이 펼쳐져요</div></div>
+        <div class="card-body">
+          <div class="faq-list">
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"심패리카 트리오는 미국 No.1 처방 제품이라던데요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>미국과 한국의 반려견 체형이 달라요.</strong><br>
+                미국은 대형견이 많아 크기가 큰 ST도 급여가 용이하지만, 한국은 소형견(5kg 이하)이 압도적으로 많습니다.<br>
+                크기가 가장 작은 CRP(크레델리오플러스)가 강제급여 시 <strong>한국 소형견에 최적화</strong>되어 있습니다.<br><br>
+                <em>💡 현장 멘트: "한국에서는 소형견이 많아서 급여 편의성이 더 중요한 포인트예요. 실제로 CRP가 가장 작아 강제급여도 쉽습니다."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"미국 FDA 승인으로 안전성이 더 검증된 거 아닌가요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>NS, CRP, ST 모두 FDA 승인 제품입니다.</strong> 안전성에 차이가 없어요.<br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>제품</th><th>성분</th><th>FDA 승인</th><th>허가국</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="제품">CRP (크레델리오플러스)</td><td data-label="성분">로티라너 + 밀베마이신옥심</td><td data-label="FDA 승인">✅</td><td data-label="허가국">미국·한국</td></tr>
+                    <tr><td data-label="제품">NS (넥스가드스펙트라)</td><td data-label="성분">아폭솔라너 + 밀베마이신옥심</td><td data-label="FDA 승인">✅</td><td data-label="허가국">미국·한국</td></tr>
+                    <tr><td data-label="제품">ST (심패리카 트리오)</td><td data-label="성분">사롤라너 + 목시덱틴 + 피란텔</td><td data-label="FDA 승인">✅</td><td data-label="허가국">미국·한국</td></tr>
+                  </tbody>
+                </table>
+                <em>💡 현장 멘트: "세 제품 모두 FDA 승인이라 안전성은 동일합니다. 차이는 크기·속도·커버 기생충이에요."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"ST가 작고 맛있는 츄어블이라 보호자 선호도가 높지 않나요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>실제 크기 비교에서 CRP가 가장 작습니다.</strong><br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>제품</th><th>소형견(5kg) 기준 크기</th><th>비고</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="제품"><strong>CRP (크레델리오플러스)</strong></td><td data-label="크기"><strong>가장 작음 ✅</strong></td><td data-label="비고">강제급여 최적</td></tr>
+                    <tr><td data-label="제품">NS (넥스가드스펙트라)</td><td data-label="크기">중간</td><td data-label="비고">-</td></tr>
+                    <tr><td data-label="제품">ST (심패리카 트리오)</td><td data-label="크기">가장 큼</td><td data-label="비고">소형견 급여 불편</td></tr>
+                  </tbody>
+                </table>
+                <em>💡 현장 멘트: "실물을 보여드리면 CRP가 가장 작다는 걸 바로 확인할 수 있어요."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"목시덱틴이 밀베마이신보다 심장사상충에 더 효과적이라던데요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>한국에서는 두 성분 모두 99% 예방으로 동일합니다.</strong><br>
+                목시덱틴이 이론적으로는 강력하지만, 한국의 심장사상충 감염 위험도에서는 밀베마이신옥심도 완전 예방이 가능합니다.<br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>항목</th><th>밀베마이신 (CRP/NS)</th><th>목시덱틴 (ST)</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="항목">심장사상충 예방율</td><td data-label="밀베마이신">99% ✅</td><td data-label="목시덱틴">99% ✅</td></tr>
+                    <tr><td data-label="항목">편충(Trichuris) 커버</td><td data-label="밀베마이신"><strong>✅ 가능</strong></td><td data-label="목시덱틴">❌ 불가</td></tr>
+                  </tbody>
+                </table>
+                <em>💡 현장 멘트: "심장사상충 예방 효과는 같은데, 편충까지 커버하는 건 CRP만 가능합니다."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"진드기 사멸 속도가 CRP가 정말 가장 빠른가요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>네, CRP(로티라너)가 가장 빠릅니다.</strong><br>
+                진드기가 바베시아를 전파하기 전에 사멸시키려면 빠른 속도가 핵심입니다.<br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>제품</th><th>성분</th><th>진드기 사멸 시작</th><th>완전 사멸</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="제품"><strong>CRP (크레델리오플러스)</strong></td><td data-label="성분">로티라너</td><td data-label="사멸 시작"><strong>4시간 ✅</strong></td><td data-label="완전 사멸"><strong>8시간</strong></td></tr>
+                    <tr><td data-label="제품">ST (심패리카 트리오)</td><td data-label="성분">사롤라너</td><td data-label="사멸 시작">8시간</td><td data-label="완전 사멸">12시간</td></tr>
+                    <tr><td data-label="제품">NS (넥스가드스펙트라)</td><td data-label="성분">아폭솔라너</td><td data-label="사멸 시작">12시간</td><td data-label="완전 사멸">24시간</td></tr>
+                  </tbody>
+                </table>
+                <em>💡 현장 멘트: "바베시아 전파까지 약 12~24시간이 걸리는데, CRP는 4~8시간에 진드기를 사멸시켜 전파를 막습니다."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"넥스가드보다 CRP가 비싸지 않나요? 보호자가 부담스러워해요."</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>보호자 판매가를 NS와 동일하게 해도 병원 마진이 더 높습니다.</strong><br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>체중</th><th>판매가</th><th>NS 마진율</th><th>CRP 마진율</th><th>차이</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="체중">소형 (~5kg)</td><td data-label="판매가">22,000원</td><td data-label="NS">48.3%</td><td data-label="CRP"><strong class="margin-highlight">58.3%</strong></td><td data-label="차이"><strong>+10%p</strong></td></tr>
+                    <tr><td data-label="체중">중형 (~11kg)</td><td data-label="판매가">25,000원</td><td data-label="NS">47.2%</td><td data-label="CRP"><strong class="margin-highlight">58.9%</strong></td><td data-label="차이"><strong>+11.7%p</strong></td></tr>
+                    <tr><td data-label="체중">대형 (~22kg)</td><td data-label="판매가">31,000원</td><td data-label="NS">46.8%</td><td data-label="CRP"><strong class="margin-highlight">57.4%</strong></td><td data-label="차이"><strong>+10.6%p</strong></td></tr>
+                  </tbody>
+                </table>
+                <em>💡 현장 멘트: "보호자 가격을 NS랑 똑같이 받아도 병원 마진이 평균 10%p 이상 높습니다. 더 상세한 내용은 가격/마진 비교 탭을 확인해 주세요."</em>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-q" onclick="toggleFaq(this)">
+                <span>"심패리카 트리오랑 가격 비교하면 어때요?"</span>
+                <span class="faq-chevron">▶</span>
+              </div>
+              <div class="faq-a">
+                <strong>CRP 그래클럽 15% 할인만으로 ST 원가 대비 마진율이 더 높습니다.</strong><br><br>
+                <table class="responsive" style="margin:10px 0;">
+                  <thead><tr><th>제품/조건</th><th>평균 마진율</th></tr></thead>
+                  <tbody>
+                    <tr><td data-label="제품/조건">ST 정가</td><td data-label="마진율">56.2%</td></tr>
+                    <tr><td data-label="제품/조건">CRP 정가</td><td data-label="마진율">58.1%</td></tr>
+                    <tr><td data-label="제품/조건"><strong>CRP 그래클럽 (15%↓)</strong></td><td data-label="마진율"><strong class="margin-highlight">64.4%</strong></td></tr>
+                    <tr><td data-label="제품/조건">NS 정가 (참고)</td><td data-label="마진율">47.5%</td></tr>
+                  </tbody>
+                </table>
+                <div class="notice" style="margin-top:10px;">
+                  CRP 그래클럽 15%만으로 NS 원가 대비 <strong>+17%p</strong> 높은 마진율. ST가 최대 33.5% 행사를 적용해야 도달하는 마진율을 CRP는 그래클럽 상시 할인으로 근접 달성합니다.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 관련 파일 -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">📎 관련 파일</div></div>
+        <div class="card-body">
+          <div class="file-links" id="files-crp6">
+            <a class="file-link-item" href="https://gcvp365.sharepoint.com/:b:/s/CA_CRP/IQAXrkCS4qtKSKLRNwmx7VF9AXlLMpC8ytyh6F4MlD5ukU4?e=7U5OVD" target="_blank" data-name="심패리카 트리오 대응 메시지 2026-03-03" data-desc="경쟁사 심패리카 트리오 현장 대응 메시지">
+              <span class="file-icon">📄</span>
+              <div class="file-info">
+                <div class="file-name">심패리카 트리오 대응 메시지 2026-03-03</div>
+                <div class="file-desc">경쟁사 심패리카 트리오 현장 대응 메시지</div>
+              </div>
+              <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+              <span class="file-arrow">↗</span>
+            </a>
+            <a class="file-link-item" href="https://gcvp365.sharepoint.com/:x:/s/CA_CRP/IQAifp7wsUlaToARTTEes4pBAbzGUCTyWvvWz0ozzxpRq2w?e=OZmyxG" target="_blank" data-name="CRP 타사대비 가격비교 2026-03-06" data-desc="NS·ST 대비 CRP 가격/마진 상세 비교표">
+              <span class="file-icon">📊</span>
+              <div class="file-info">
+                <div class="file-name">CRP 타사대비 가격비교 2026-03-06</div>
+                <div class="file-desc">NS·ST 대비 CRP 가격/마진 상세 비교표</div>
+              </div>
+              <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+              <span class="file-arrow">↗</span>
+            </a>
+          </div>
+          <button class="add-file-btn" onclick="openModal('files-crp6')">+ 파일 링크 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CRP 가격/마진 비교 (7) ─── -->
+    <div class="product-section" id="sec-crp-7">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div>
+          <div class="section-title">CRP · 가격/마진 비교</div>
+          <div class="section-desc">CSO · Elanco | NS·ST 대비 체중구간별 마진율</div>
+        </div>
+        <span class="tag tag-a">🔄 업데이트형</span>
+      </div>
+
+      <!-- 핵심 메시지 -->
+      <div class="notice" style="margin-bottom:16px; font-size:13px;">
+        💡 <strong>핵심:</strong> CRP 그래클럽 15%만으로도 NS 원가 대비 <strong>+17%p</strong> 높은 마진율. ST가 최대 33.5% 행사를 적용해야 도달하는 마진율을 CRP는 그래클럽 상시 할인으로 근접 달성.
+      </div>
+
+      <!-- 마진율 요약 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">📊 마진율 요약 비교</div></div>
+        <div class="card-body">
+          <div class="summary-table-wrap">
+            <table class="responsive">
+              <thead><tr><th>구분</th><th>평균 마진율</th><th>시각화</th></tr></thead>
+              <tbody>
+                <tr><td data-label="구분">NS 정가</td><td data-label="마진율">47.5%</td><td data-label="시각화"><span class="summary-bar" style="width:47px;background:#aaa;"></span>47.5%</td></tr>
+                <tr><td data-label="구분">ST 정가</td><td data-label="마진율">56.2%</td><td data-label="시각화"><span class="summary-bar" style="width:56px;background:#f0a030;"></span>56.2%</td></tr>
+                <tr><td data-label="구분"><strong>CRP 정가</strong></td><td data-label="마진율"><strong class="margin-highlight">58.1%</strong></td><td data-label="시각화"><span class="summary-bar" style="width:58px;"></span><strong>58.1%</strong></td></tr>
+                <tr><td data-label="구분"><strong>CRP 그래클럽 15%↓</strong></td><td data-label="마진율"><strong class="margin-highlight">64.4%</strong></td><td data-label="시각화"><span class="summary-bar" style="width:64px;"></span><strong>64.4%</strong></td></tr>
+                <tr><td data-label="구분"><strong>CRP 특판 30%↓</strong></td><td data-label="마진율"><strong class="margin-best">70.7%</strong></td><td data-label="시각화"><span class="summary-bar" style="width:70px;background:#e07a3a;"></span><strong class="margin-best">70.7%</strong></td></tr>
+                <tr><td data-label="구분">ST 행사 (최대 33.5%↓)</td><td data-label="마진율">70.7%</td><td data-label="시각화"><span class="summary-bar" style="width:70px;background:#f0a030;"></span>70.7%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NS 원가 테이블 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">넥스가드스펙트라 (NS) 원가</div></div>
+        <div class="card-body">
+          <table class="responsive">
+            <thead><tr><th>사이즈</th><th>체중</th><th>1팩 공급가</th><th>1T 공급가</th><th>1T 판매가</th><th>마진</th><th>마진율</th></tr></thead>
+            <tbody>
+              <tr><td data-label="사이즈">NS XS</td><td data-label="체중">2~3.5kg</td><td data-label="1팩 공급가">31,900</td><td data-label="1T 공급가">10,633</td><td data-label="1T 판매가">20,000</td><td data-label="마진">9,367</td><td data-label="마진율">46.8%</td></tr>
+              <tr><td data-label="사이즈">NS S</td><td data-label="체중">3.5~7.5kg</td><td data-label="1팩 공급가">34,100</td><td data-label="1T 공급가">11,367</td><td data-label="1T 판매가">22,000</td><td data-label="마진">10,633</td><td data-label="마진율">48.3%</td></tr>
+              <tr><td data-label="사이즈">NS M</td><td data-label="체중">7.5~15kg</td><td data-label="1팩 공급가">39,600</td><td data-label="1T 공급가">13,200</td><td data-label="1T 판매가">25,000</td><td data-label="마진">11,800</td><td data-label="마진율">47.2%</td></tr>
+              <tr><td data-label="사이즈">NS L</td><td data-label="체중">15~30kg</td><td data-label="1팩 공급가">49,500</td><td data-label="1T 공급가">16,500</td><td data-label="1T 판매가">31,000</td><td data-label="마진">14,500</td><td data-label="마진율">46.8%</td></tr>
+              <tr><td data-label="사이즈">NS XL</td><td data-label="체중">30~60kg</td><td data-label="1팩 공급가">63,800</td><td data-label="1T 공급가">21,267</td><td data-label="1T 판매가">41,000</td><td data-label="마진">19,733</td><td data-label="마진율">48.1%</td></tr>
+              <tr style="background:var(--bg);font-weight:700;"><td colspan="6" data-label="">평균 마진율</td><td data-label="마진율">47.5%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CRP 원가 테이블 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">크레델리오플러스 (CRP) 정가 원가</div></div>
+        <div class="card-body">
+          <table class="responsive">
+            <thead><tr><th>컬러</th><th>체중</th><th>1팩 공급가</th><th>1T 공급가</th><th>1T 판매가</th><th>마진</th><th>마진율</th></tr></thead>
+            <tbody>
+              <tr><td data-label="컬러">Yellow</td><td data-label="체중">1.4~2.8kg</td><td data-label="1팩 공급가">26,400</td><td data-label="1T 공급가">8,800</td><td data-label="1T 판매가">20,000</td><td data-label="마진">11,200</td><td data-label="마진율"><strong class="margin-highlight">56.0%</strong></td></tr>
+              <tr><td data-label="컬러">Pink</td><td data-label="체중">2.8~5.5kg</td><td data-label="1팩 공급가">27,500</td><td data-label="1T 공급가">9,167</td><td data-label="1T 판매가">22,000</td><td data-label="마진">12,833</td><td data-label="마진율"><strong class="margin-highlight">58.3%</strong></td></tr>
+              <tr><td data-label="컬러">Orange</td><td data-label="체중">5.5~11kg</td><td data-label="1팩 공급가">30,800</td><td data-label="1T 공급가">10,267</td><td data-label="1T 판매가">25,000</td><td data-label="마진">14,733</td><td data-label="마진율"><strong class="margin-highlight">58.9%</strong></td></tr>
+              <tr><td data-label="컬러">Green</td><td data-label="체중">11~22kg</td><td data-label="1팩 공급가">39,600</td><td data-label="1T 공급가">13,200</td><td data-label="1T 판매가">31,000</td><td data-label="마진">17,800</td><td data-label="마진율"><strong class="margin-highlight">57.4%</strong></td></tr>
+              <tr><td data-label="컬러">Blue</td><td data-label="체중">22~45kg</td><td data-label="1팩 공급가">49,500</td><td data-label="1T 공급가">16,500</td><td data-label="1T 판매가">41,000</td><td data-label="마진">24,500</td><td data-label="마진율"><strong class="margin-highlight">59.8%</strong></td></tr>
+              <tr style="background:var(--accent-light);font-weight:700;"><td colspan="6" data-label="">평균 마진율</td><td data-label="마진율"><strong class="margin-highlight">58.1%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ST 원가 테이블 -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">심패리카 트리오 (ST) 원가</div></div>
+        <div class="card-body">
+          <table class="responsive">
+            <thead><tr><th>컬러</th><th>체중</th><th>1팩 공급가</th><th>1T 공급가</th><th>1T 판매가</th><th>마진</th><th>마진율</th></tr></thead>
+            <tbody>
+              <tr><td data-label="컬러">골드 XXS</td><td data-label="체중">1.25~2.5kg</td><td data-label="1팩 공급가">26,400</td><td data-label="1T 공급가">8,800</td><td data-label="1T 판매가">19,000</td><td data-label="마진">10,200</td><td data-label="마진율">53.7%</td></tr>
+              <tr><td data-label="컬러">퍼플 XS</td><td data-label="체중">2.5~5kg</td><td data-label="1팩 공급가">27,500</td><td data-label="1T 공급가">9,167</td><td data-label="1T 판매가">21,000</td><td data-label="마진">11,833</td><td data-label="마진율">56.3%</td></tr>
+              <tr><td data-label="컬러">카라멜 S</td><td data-label="체중">5~10kg</td><td data-label="1팩 공급가">30,800</td><td data-label="1T 공급가">10,267</td><td data-label="1T 판매가">23,000</td><td data-label="마진">12,733</td><td data-label="마진율">55.4%</td></tr>
+              <tr><td data-label="컬러">블루 M</td><td data-label="체중">10~20kg</td><td data-label="1팩 공급가">36,300</td><td data-label="1T 공급가">12,100</td><td data-label="1T 판매가">26,000</td><td data-label="마진">13,900</td><td data-label="마진율">53.5%</td></tr>
+              <tr><td data-label="컬러">그린 L</td><td data-label="체중">20~40kg</td><td data-label="1팩 공급가">42,900</td><td data-label="1T 공급가">14,300</td><td data-label="1T 판매가">31,000</td><td data-label="마진">16,700</td><td data-label="마진율">53.9%</td></tr>
+              <tr><td data-label="컬러">브라운 XL</td><td data-label="체중">40~60kg</td><td data-label="1팩 공급가">56,100</td><td data-label="1T 공급가">18,700</td><td data-label="1T 판매가">41,000</td><td data-label="마진">22,300</td><td data-label="마진율">54.4%</td></tr>
+              <tr style="background:var(--bg);font-weight:700;"><td colspan="6" data-label="">평균 마진율</td><td data-label="마진율">56.2%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CRP 그래클럽 15% -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">CRP 그래클럽 15% 할인 적용 시</div><span class="pill">상시 적용</span></div>
+        <div class="card-body">
+          <table class="responsive">
+            <thead><tr><th>컬러</th><th>1T 공급가</th><th>1T 판매가</th><th>마진</th><th>마진율</th></tr></thead>
+            <tbody>
+              <tr><td data-label="컬러">Yellow</td><td data-label="1T 공급가">7,480</td><td data-label="1T 판매가">20,000</td><td data-label="마진">12,520</td><td data-label="마진율"><strong class="margin-highlight">62.6%</strong></td></tr>
+              <tr><td data-label="컬러">Pink</td><td data-label="1T 공급가">7,792</td><td data-label="1T 판매가">22,000</td><td data-label="마진">14,208</td><td data-label="마진율"><strong class="margin-highlight">64.6%</strong></td></tr>
+              <tr><td data-label="컬러">Orange</td><td data-label="1T 공급가">8,727</td><td data-label="1T 판매가">25,000</td><td data-label="마진">16,273</td><td data-label="마진율"><strong class="margin-highlight">65.1%</strong></td></tr>
+              <tr><td data-label="컬러">Green</td><td data-label="1T 공급가">11,220</td><td data-label="1T 판매가">31,000</td><td data-label="마진">19,780</td><td data-label="마진율"><strong class="margin-highlight">63.8%</strong></td></tr>
+              <tr><td data-label="컬러">Blue</td><td data-label="1T 공급가">14,025</td><td data-label="1T 판매가">41,000</td><td data-label="마진">26,975</td><td data-label="마진율"><strong class="margin-highlight">65.8%</strong></td></tr>
+              <tr style="background:var(--accent-light);font-weight:700;"><td colspan="4" data-label="">평균 마진율</td><td data-label="마진율"><strong class="margin-highlight">64.4%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CRP 특판 30% -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">CRP 특판 30% 할인 적용 시</div><span class="pill orange">특판 시즌</span></div>
+        <div class="card-body">
+          <table class="responsive">
+            <thead><tr><th>컬러</th><th>1T 공급가</th><th>1T 판매가</th><th>마진</th><th>마진율</th></tr></thead>
+            <tbody>
+              <tr><td data-label="컬러">Yellow</td><td data-label="1T 공급가">6,160</td><td data-label="1T 판매가">20,000</td><td data-label="마진">13,840</td><td data-label="마진율"><strong class="margin-best">69.2%</strong></td></tr>
+              <tr><td data-label="컬러">Pink</td><td data-label="1T 공급가">6,417</td><td data-label="1T 판매가">22,000</td><td data-label="마진">15,583</td><td data-label="마진율"><strong class="margin-best">70.8%</strong></td></tr>
+              <tr><td data-label="컬러">Orange</td><td data-label="1T 공급가">7,187</td><td data-label="1T 판매가">25,000</td><td data-label="마진">17,813</td><td data-label="마진율"><strong class="margin-best">71.3%</strong></td></tr>
+              <tr><td data-label="컬러">Green</td><td data-label="1T 공급가">9,240</td><td data-label="1T 판매가">31,000</td><td data-label="마진">21,760</td><td data-label="마진율"><strong class="margin-best">70.2%</strong></td></tr>
+              <tr><td data-label="컬러">Blue</td><td data-label="1T 공급가">11,550</td><td data-label="1T 판매가">41,000</td><td data-label="마진">29,450</td><td data-label="마진율"><strong class="margin-best">71.8%</strong></td></tr>
+              <tr style="background:#fdf0e6;font-weight:700;"><td colspan="4" data-label="">평균 마진율</td><td data-label="마진율"><strong class="margin-best">70.7%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 관련 파일 -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">📎 관련 파일</div></div>
+        <div class="card-body">
+          <div class="file-links" id="files-crp7">
+            <a class="file-link-item" href="https://gcvp365.sharepoint.com/:b:/s/CA_CRP/IQAXrkCS4qtKSKLRNwmx7VF9AXlLMpC8ytyh6F4MlD5ukU4?e=7U5OVD" target="_blank" data-name="심패리카 트리오 대응 메시지 2026-03-03" data-desc="경쟁사 심패리카 트리오 현장 대응 메시지">
+              <span class="file-icon">📄</span>
+              <div class="file-info">
+                <div class="file-name">심패리카 트리오 대응 메시지 2026-03-03</div>
+                <div class="file-desc">경쟁사 심패리카 트리오 현장 대응 메시지</div>
+              </div>
+              <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+              <span class="file-arrow">↗</span>
+            </a>
+            <a class="file-link-item" href="https://gcvp365.sharepoint.com/:x:/s/CA_CRP/IQAifp7wsUlaToARTTEes4pBAbzGUCTyWvvWz0ozzxpRq2w?e=OZmyxG" target="_blank" data-name="CRP 타사대비 가격비교 2026-03-06" data-desc="NS·ST 대비 CRP 가격/마진 상세 비교표">
+              <span class="file-icon">📊</span>
+              <div class="file-info">
+                <div class="file-name">CRP 타사대비 가격비교 2026-03-06</div>
+                <div class="file-desc">NS·ST 대비 CRP 가격/마진 상세 비교표</div>
+              </div>
+              <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+              <span class="file-arrow">↗</span>
+            </a>
+          </div>
+          <button class="add-file-btn" onclick="openModal('files-crp7')">+ 파일 링크 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         2025 아카이브 섹션들
+    ══════════════════════════════════════ -->
+
+    <!-- ─── 갈리프란트 품절/대응 (a-gallifrant-0) ─── -->
+    <div class="product-section archive-section" id="sec-a-gallifrant-0">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">갈리프란트 · 품절 안내 및 대응</div><div class="section-desc">🗃️ 2025 아카이브</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-11-27 품절 공지</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">갈리프란트 20mg 품절 및 그래클럽 적용 기준</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <div class="notice warning">⚠️ 프로모션 마감 1주일 전 갈리프란트 20mg 품절 발생</div>
+            <h4>품절 대응</h4>
+            <table id="tbl-agal0-main">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">재입고 예정</td><td contenteditable="false">12월 말 또는 1월 (검정기관 부재로 지연)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">리스트업 대상</td><td contenteditable="false">① 주문 취소 고객 ② 컴플레인 거래처 ③ 11월 말까지 구매 의사 명확한 거래처</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">영업 방향</td><td contenteditable="false">가능한 60mg으로 유도 / 재입고 후 런칭 혜택 수준으로 보상 처리 가능</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-agal0-main')">+ 행 추가</button>
+            <h4>그래클럽 하반기 실적 기준 (2025)</h4>
+            <div class="notice">하반기 100만원↑ 구매 거래처도 자동 승급 불가 — 반드시 기안 올려야 승급 처리</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 갈리프란트 FAQ/샘플 (a-gallifrant-1) ─── -->
+    <div class="product-section archive-section" id="sec-a-gallifrant-1">
+      <div class="section-header">
+        <span class="section-emoji">💊</span>
+        <div><div class="section-title">갈리프란트 · FAQ / 샘플 현황</div><div class="section-desc">🗃️ 2025 아카이브</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-11 현장 FAQ</div>
+        <div class="card">
+          <div class="card-body">
+            <div class="notice">핵심 메시지: <strong>"Non-COX NSAID"</strong> — 원장님들이 자연스럽게 추가 질문으로 이어지는 효과 확인</div>
+            <h4>현장 활용 포인트</h4>
+            <table id="tbl-agal1-main">
+              <thead><tr><th>구분</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">Key Message</td><td contenteditable="false">Non-COX NSAID → 원장님 추가 질문 유도 → 디테일 설명 연결</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">심화 질문 대응</td><td contenteditable="false">지역별 담당 TC에게 토스(Toss)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">샘플 출처</td><td contenteditable="false">아이해듀 세미나 / FASAVA 런천 세미나 / 디너 행사 등</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-agal1-main')">+ 행 추가</button>
+            <h4>📎 관련 파일</h4>
+            <div class="file-links" id="files-agal1"></div>
+            <button class="add-file-btn" onclick="openModal('files-agal1')">+ 파일 링크 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 리버록스 2025 (a-liverox-0) ─── -->
+    <div class="product-section archive-section" id="sec-a-liverox-0">
+      <div class="section-header">
+        <span class="section-emoji">🫀</span>
+        <div><div class="section-title">리버록스 · 2025 출시 / 교육</div><div class="section-desc">🗃️ 2025 아카이브 · CSO · KLINIX</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-12-08 출시 / 12-15 교육</div>
+        <div class="card">
+          <div class="card-body">
+            <table id="tbl-aliver0-main">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">온그린몰 오픈</td><td contenteditable="false">2025-12-08 (월)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">실물 교육자료 배송</td><td contenteditable="false">2025-12-10 (수) 자택 배송 (리플렛 2P + 책자 10P)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">온라인 교육</td><td contenteditable="false">2025-12-15 (월) 09:00~10:00 / Zoom / 김성호 수의학박사</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">Zoom 링크</td><td contenteditable="false">https://us06web.zoom.us/j/84893687794 (ID: 848 9368 7794 / 암호: 353399)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-aliver0-main')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 공통 2025: FASAVA/플래닝컨퍼런스 (a-common-0) ─── -->
+    <div class="product-section archive-section" id="sec-a-common-0">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · FASAVA / 플래닝컨퍼런스</div><div class="section-desc">🗃️ 2025 아카이브</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-10-31 FASAVA 행사</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">2025 Elanco NEW Launch 행사</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <table id="tbl-acom0-fasava">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">일자/장소</td><td contenteditable="false">10/31(금) 인터불고엑스코점 (크리스탈볼룸 LL층)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">집합 시간</td><td contenteditable="false">17:00</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">루트</td><td contenteditable="false">숙소 체크인 → 환복 → 행사장 팀별 택시 이동(개인차량 X) → 17시 집합 → 행사 → 2차 → 팀별 택시 귀가</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">복장</td><td contenteditable="false">엘랑코 반팔 + 어두운 바지 + 파란 스카프 / 겉옷: 엘랑코 집업</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-acom0-fasava')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+      <div class="date-entry" style="margin-top:16px;">
+        <div class="date-entry-label">2025-11-20~21 C7 플래닝컨퍼런스</div>
+        <div class="card">
+          <div class="card-body">
+            <table id="tbl-acom0-pc">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">일시</td><td contenteditable="false">2025-11-20(목) ~ 21(금)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">집합 시간</td><td contenteditable="false">AM 09:20 (시간 엄수)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">저녁 식사</td><td contenteditable="false">주변 식당 '가든하다'</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-acom0-pc')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 공통 2025: 12월 마케팅 공지 (a-common-1) ─── -->
+    <div class="product-section archive-section" id="sec-a-common-1">
+      <div class="section-header">
+        <span class="section-emoji">📢</span>
+        <div><div class="section-title">공통 · 12월 마케팅 공지</div><div class="section-desc">🗃️ 2025 아카이브</div></div>
+        <span class="tag tag-b">📅 누적형</span>
+      </div>
+      <div class="date-entry">
+        <div class="date-entry-label">2025-12 마케팅 공지</div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">12월 프로모션 종료/유지/시작</div><span style="font-size:11px;color:var(--text-muted);">담당: 마케팅실 김유민</span></div>
+          <div class="card-body">
+            <h4>프로모션 종료</h4>
+            <table id="tbl-acom1-end">
+              <thead><tr><th>항목</th><th>내용</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">블랙딜 종료</td><td contenteditable="false">11월 한 달간 (엑시트/캐니플루/베트로캄-주/듀라벳25-주/외용제/자사보조제/버박 일부)</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">갈리프란트 상시 전환</td><td contenteditable="false">20mg 33,000원 / 60mg 60,500원 / 5통 5% / 10통 10%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">후결제시스템 종료</td><td contenteditable="false">11월 말까지 반품 및 결제 정산 완료</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-acom1-end')">+ 행 추가</button>
+            <h4>프로모션 유지</h4>
+            <table id="tbl-acom1-keep">
+              <thead><tr><th>제품</th><th>조건</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">크레델리오플러스 특판 (~12/15)</td><td contenteditable="false">번들 10팩 10% / 30팩 18% / 60팩 23%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+                <tr class="editable-row"><td contenteditable="false">그래클럽 PLUS관 (12월 정산 마감)</td><td contenteditable="false">인터베리알파 25% / 피모메딘 50% / 프레비콕스 50% / 캐니플맥스 30% / 셀리녹스 25% / 노바트 25% / 엑시트 40% / 캐닌슐린 20% / 옵티뮨 22.5%</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-acom1-keep')">+ 행 추가</button>
+            <h4>프로모션 시작</h4>
+            <table id="tbl-acom1-start">
+              <thead><tr><th>제품</th><th>조건</th><th style="width:30px"></th></tr></thead>
+              <tbody>
+                <tr class="editable-row"><td contenteditable="false">프레비콕스 특판 (12월)</td><td contenteditable="false">2통↑ 구매 시 50% 할인</td><td><button class="del-row-btn" onclick="delRow(this)">✕</button></td></tr>
+              </tbody>
+            </table>
+            <button class="add-row-btn" onclick="addRow('tbl-acom1-start')">+ 행 추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- FLOATING TOOLBAR -->
+<div id="edit-toolbar">
+  <span style="color:#aaa; font-size:12px;">편집 중</span>
+  <button class="btn btn-save" onclick="saveAll()">💾 저장</button>
+  <button class="btn btn-white" onclick="toggleEditMode(false)">✕ 취소</button>
+</div>
+
+<!-- SAVE TOAST -->
+<div id="save-toast">✅ 저장 완료!</div>
+
+<script>
+  // ── PASSWORD MODAL ──
+  const EDIT_PASSWORD = 'capm2026'; // ← 비밀번호 여기서 변경 가능
+  const DATA_VERSION = 'v5'; // ← 버전 바꾸면 모든 브라우저 저장 데이터 초기화
+
+  function openPwModal() {
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').style.display = 'none';
+    document.getElementById('pw-modal').classList.add('open');
+    setTimeout(() => document.getElementById('pw-input').focus(), 100);
+  }
+
+  function closePwModal() {
+    document.getElementById('pw-modal').classList.remove('open');
+  }
+
+  function confirmPw() {
+    const val = document.getElementById('pw-input').value;
+    if (val === EDIT_PASSWORD) {
+      closePwModal();
+      // 비번 확인 후에만 편집 버튼 표시
+      document.getElementById('edit-btn').style.display = '';
+      toggleEditMode(true);
+    } else {
+      document.getElementById('pw-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
+
+  // ── YEAR SWITCH ──
+  let currentYear = '2026';
+
+  const archiveSectionMap = {
+    'a-gallifrant': ['갈리프란트', ['품절 안내 및 대응', 'FAQ / 샘플 현황']],
+    'a-liverox': ['리버록스', ['2025 출시 / 교육']],
+    'a-common': ['팀 전체 공지', ['FASAVA / 플래닝컨퍼런스', '12월 마케팅 공지']],
+  };
+
+  function switchYear(year) {
+    currentYear = year;
+    document.getElementById('nav-2026').style.display = year === '2026' ? 'block' : 'none';
+    document.getElementById('nav-2025').style.display = year === '2025' ? 'block' : 'none';
+    document.getElementById('tab-2026').classList.toggle('active', year === '2026');
+    document.getElementById('tab-2025').classList.toggle('active', year === '2025');
+    // 최근 업데이트 카드 숨김 (2025 아카이브에서는 미표시)
+    const recentCard = document.getElementById('recent-updates-card');
+    if (recentCard) recentCard.style.display = year === '2026' ? '' : 'none';
+    // 활성 섹션 홈으로
+    hideAll();
+    document.getElementById('sec-home').classList.add('active');
+    document.getElementById('breadcrumb').innerHTML = `CA PM팀 공지사항 · <span>${year === '2026' ? '2026 현재' : '2025 아카이브'}</span>`;
+    document.querySelectorAll('.nav-section').forEach(s => s.classList.remove('open'));
+  }
+
+  // ── SECTION NAV ──
+  const sectionMap = {
+    crp: ['CRP', ['운영방침', '6가지 핵심 업데이트', '대응 자료', '셀아웃 툴', '그래클럽', '엘랑코 영업리포트', '경쟁사 대응 FAQ', '가격/마진 비교']],
+    selinox: ['셀리녹스', ['갈변화 현상 교육자료', '5.5% 쿠폰 선지급', '3월 프로모션']],
+    pimomedin: ['피모메딘', ['3월 프로모션']],
+    caniflumx: ['캐니플루-맥스', ['2026 혜택 운영방식']],
+    mybrown: ['마이브라운', ['영업 활동 방향']],
+    regenguard: ['리젠가드-S', ['런칭 프로모션']],
+    liverox: ['리버록스', ['CSO 출시 안내', '온라인 교육']],
+    definit: ['데피니트', ['샘플링 피드백']],
+    intervery: ['인터베리알파', ['2분기 샘플링', '치아모형 배포', '증례모집 컨테스트']],
+    novat: ['노바트', ['증례모집 컨테스트']],
+    msd: ['MSD 제품', ['비달타/레벤타 품절 안내']],
+    common: ['공통 / 팀 전체', ['영업 회의', '프로모션 공지', 'WMS 반품 절차', '증례모집 컨테스트']],
+  };
+
+  function hideAll() {
+    document.querySelectorAll('.product-section').forEach(el => el.classList.remove('active'));
+  }
+
+  function showSection(section, idx) {
+    hideAll();
+    const el = document.getElementById(`sec-${section}-${idx}`);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.nav-product').forEach(i => i.classList.remove('active'));
+    const navSection = document.querySelector(`[data-section="${section}"]`);
+    if (navSection) {
+      navSection.classList.add('open');
+      const items = navSection.querySelectorAll('.nav-sub-item');
+      if (items[idx]) items[idx].classList.add('active');
+      navSection.querySelector('.nav-product').classList.add('active');
+    }
+    const info = sectionMap[section] || archiveSectionMap[section];
+    let label = '';
+    if (info) {
+      const yearLabel = section.startsWith('a-') ? '🗃️ 2025 · ' : '';
+      label = `${yearLabel}${info[0]} · ${info[1][idx]}`;
+      document.getElementById('breadcrumb').innerHTML = `CA PM팀 · ${label.replace('·', '·')} · <span>${info[1][idx]}</span>`;
+      // 최근 기록 저장
+      addToRecentHistory(section, idx, label);
+    }
+    document.getElementById('sidebar').classList.remove('open');
+    // 모바일 네비 홈 탭으로 복귀
+    const mobHome = document.getElementById('mob-home');
+    const mobRecent = document.getElementById('mob-recent');
+    if (mobHome) mobHome.classList.add('active');
+    if (mobRecent) mobRecent.classList.remove('active');
+  }
+
+  function toggleSection(section) {
+    const navSection = document.querySelector(`[data-section="${section}"]`);
+    if (!navSection) return;
+    const isOpen = navSection.classList.contains('open');
+    document.querySelectorAll('.nav-section').forEach(s => s.classList.remove('open'));
+    if (!isOpen) navSection.classList.add('open');
+  }
+
+  function goToCommon() { showSection('common', 3); }
+  function toggleMobile() { document.getElementById('sidebar').classList.toggle('open'); }
+
+  // ── EDIT MODE ──
+  function toggleEditMode(on) {
+    document.body.classList.toggle('edit-mode', on);
+    // 편집 종료 시 버튼 다시 숨김
+    if (!on) document.getElementById('edit-btn').style.display = 'none';
+    // 테이블 셀
+    document.querySelectorAll('[contenteditable]').forEach(el => {
+      el.contentEditable = on ? 'true' : 'false';
+    });
+    // 본문 텍스트 (p, li, notice)
+    document.querySelectorAll('.card-body p, .card-body li, .notice').forEach(el => {
+      el.contentEditable = on ? 'true' : 'false';
+    });
+    // recent update 버튼
+    document.querySelectorAll('.recent-del-btn').forEach(b => b.style.display = on ? 'inline-block' : 'none');
+    const addBtn = document.getElementById('add-recent-btn');
+    if (addBtn) addBtn.style.display = on ? 'block' : 'none';
+    if (!on) loadSaved();
+  }
+
+  function addRecentItem() {
+    const container = document.getElementById('recent-updates');
+    const div = document.createElement('div');
+    div.className = 'recent-item';
+    div.innerHTML = `
+      <div class="recent-date" contenteditable="true" style="outline:none;min-width:72px;">YYYY-MM-DD</div>
+      <div class="recent-text" style="flex:1;" contenteditable="true" style="outline:none;">내용을 입력하세요</div>
+      <button class="recent-del-btn" onclick="this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:inline-block;">✕</button>`;
+    container.appendChild(div);
+    div.querySelector('.recent-date').focus();
+  }
+
+  // ── TABLE ROW ──
+  function addRow(tableId) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    const firstRow = tbody.querySelector('tr');
+    const cellCount = firstRow ? firstRow.querySelectorAll('td').length : 3;
+    const tr = document.createElement('tr');
+    tr.className = 'editable-row';
+    for (let i = 0; i < cellCount - 1; i++) {
+      const td = document.createElement('td');
+      td.contentEditable = 'true';
+      td.textContent = '';
+      tr.appendChild(td);
+    }
+    // last cell: delete button
+    const tdDel = document.createElement('td');
+    tdDel.innerHTML = '<button class="del-row-btn" onclick="delRow(this)">✕</button>';
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+    tr.querySelector('td').focus();
+  }
+
+  function delRow(btn) {
+    btn.closest('tr').remove();
+  }
+
+  // ── FILE LINKS ──
+  let currentFileTarget = null;
+
+  const fileIcons = { xlsx: '📊', pdf: '📄', pptx: '📑', link: '🔗' };
+
+  function openModal(containerId) {
+    currentFileTarget = containerId;
+    document.getElementById('modal-name').value = '';
+    document.getElementById('modal-url').value = '';
+    document.getElementById('modal-desc').value = '';
+    document.getElementById('file-modal').classList.add('open');
+    setTimeout(() => document.getElementById('modal-name').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('file-modal').classList.remove('open');
+    currentFileTarget = null;
+  }
+
+  function confirmAddFile() {
+    const type = document.getElementById('modal-type').value;
+    const name = document.getElementById('modal-name').value.trim();
+    const url  = document.getElementById('modal-url').value.trim();
+    const desc = document.getElementById('modal-desc').value.trim();
+    if (!name) { alert('파일 이름을 입력해주세요.'); return; }
+    const container = document.getElementById(currentFileTarget);
+    const a = document.createElement('a');
+    a.className = 'file-link-item';
+    a.href = url || '#';
+    a.target = '_blank';
+    a.dataset.name = name;
+    a.dataset.desc = desc;
+    a.innerHTML = `
+      <span class="file-icon">${fileIcons[type] || '🔗'}</span>
+      <div class="file-info">
+        <div class="file-name">${name}</div>
+        <div class="file-desc">${desc}</div>
+      </div>
+      <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+      <span class="file-arrow">↗</span>`;
+    container.appendChild(a);
+    closeModal();
+  }
+
+  function delFile(e, btn) {
+    e.preventDefault();
+    btn.closest('.file-link-item').remove();
+  }
+
+  // ── SAVE / LOAD (localStorage) ──
+  function saveAll() {
+    const data = { _version: DATA_VERSION };
+
+    // editable cells
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      const id = el.id || `ce-${i}`;
+      if (!el.id) el.id = id;
+      data[id] = el.innerHTML;
+    });
+
+    // table rows (tbody)
+    document.querySelectorAll('tbody').forEach(tbody => {
+      const tableId = tbody.closest('table').id;
+      if (!tableId) return;
+      const rows = [];
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const cells = [];
+        tr.querySelectorAll('td[contenteditable]').forEach(td => cells.push(td.innerHTML));
+        if (cells.length) rows.push(cells);
+      });
+      data[`rows_${tableId}`] = rows;
+    });
+
+    // file links
+    document.querySelectorAll('.file-links').forEach(fl => {
+      const files = [];
+      fl.querySelectorAll('.file-link-item').forEach(a => {
+        files.push({ name: a.dataset.name, desc: a.dataset.desc, href: a.href, icon: a.querySelector('.file-icon').textContent });
+      });
+      data[`files_${fl.id}`] = files;
+    });
+
+    // recent updates
+    const recentItems = [];
+    document.querySelectorAll('#recent-updates .recent-item').forEach(item => {
+      recentItems.push({
+        date: item.querySelector('.recent-date') ? item.querySelector('.recent-date').textContent : '',
+        text: item.querySelector('.recent-text') ? item.querySelector('.recent-text').textContent : '',
+        section: item.getAttribute('onclick') || ''
+      });
+    });
+    data['recent_updates'] = recentItems;
+
+    localStorage.setItem('ca_pm_data', JSON.stringify(data));
+    toggleEditMode(false);
+    showToast();
+  }
+
+  function loadSaved() {
+    const raw = localStorage.getItem('ca_pm_data');
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { return; }
+    // 버전 불일치 시 이전 데이터 무시 (깨진 데이터 방지)
+    if (data._version !== DATA_VERSION) {
+      localStorage.removeItem('ca_pm_data');
+      return;
+    }
+
+    // editable cells
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      const id = el.id || `ce-${i}`;
+      if (!el.id) el.id = id;
+      if (data[id] !== undefined) el.innerHTML = data[id];
+    });
+
+    // table rows
+    document.querySelectorAll('tbody').forEach(tbody => {
+      const table = tbody.closest('table');
+      const tableId = table.id;
+      if (!tableId || !data[`rows_${tableId}`]) return;
+      const colCount = table.querySelectorAll('th').length;
+      tbody.innerHTML = '';
+      data[`rows_${tableId}`].forEach(cells => {
+        const tr = document.createElement('tr');
+        tr.className = 'editable-row';
+        cells.forEach(html => {
+          const td = document.createElement('td');
+          td.contentEditable = 'false';
+          td.innerHTML = html;
+          tr.appendChild(td);
+        });
+        const tdDel = document.createElement('td');
+        tdDel.innerHTML = '<button class="del-row-btn" onclick="delRow(this)">✕</button>';
+        tr.appendChild(tdDel);
+        tbody.appendChild(tr);
+      });
+    });
+
+    // file links
+    document.querySelectorAll('.file-links').forEach(fl => {
+      const key = `files_${fl.id}`;
+      if (!data[key]) return;
+      fl.innerHTML = '';
+      data[key].forEach(f => {
+        const a = document.createElement('a');
+        a.className = 'file-link-item';
+        a.href = f.href || '#';
+        a.target = '_blank';
+        a.dataset.name = f.name;
+        a.dataset.desc = f.desc;
+        a.innerHTML = `
+          <span class="file-icon">${f.icon}</span>
+          <div class="file-info">
+            <div class="file-name">${f.name}</div>
+            <div class="file-desc">${f.desc}</div>
+          </div>
+          <button class="del-file-btn" onclick="delFile(event, this)">✕</button>
+          <span class="file-arrow">↗</span>`;
+        fl.appendChild(a);
+      });
+    });
+
+    // recent updates
+    if (data['recent_updates'] && data['recent_updates'].length) {
+      const container = document.getElementById('recent-updates');
+      if (container) {
+        container.innerHTML = '';
+        data['recent_updates'].forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'recent-item';
+          if (item.section) div.setAttribute('onclick', item.section);
+          div.innerHTML = `
+            <div class="recent-date">${item.date}</div>
+            <div class="recent-text" style="flex:1;">${item.text}</div>
+            <button class="recent-del-btn" onclick="this.parentElement.remove()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;display:none;">✕</button>`;
+          container.appendChild(div);
+        });
+      }
+    }
+  }
+
+  function showToast() {
+    const t = document.getElementById('save-toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── 다크 모드 ──
+  function toggleDark(on) {
+    document.body.classList.toggle('dark-mode', on);
+    localStorage.setItem('ca_dark', on ? '1' : '0');
+  }
+
+  // ── NEW 배지 ──
+  function toggleBadges(on) {
+    document.getElementById('sidebar').classList.toggle('badges-hidden', !on);
+    localStorage.setItem('ca_badges', on ? '1' : '0');
+  }
+
+  // ── 설정 패널 ──
+  function toggleSettings() {
+    document.getElementById('settings-panel').classList.toggle('open');
+  }
+
+  // ── FAQ 아코디언 ──
+  function toggleFaq(qEl) {
+    qEl.parentElement.classList.toggle('open');
+  }
+
+  // ── 모바일 하단 네비 ──
+  let recentHistory = JSON.parse(localStorage.getItem('ca_recent') || '[]');
+
+  function mobileNav(tab) {
+    document.getElementById('mob-home').classList.toggle('active', tab === 'home');
+    document.getElementById('mob-recent').classList.toggle('active', tab === 'recent');
+    const recentPanel = document.getElementById('recent-panel');
+    if (tab === 'home') {
+      recentPanel.classList.remove('active');
+      hideAll();
+      document.getElementById('sec-home').classList.add('active');
+      document.getElementById('breadcrumb').innerHTML = 'CA PM팀 공지사항 · <span>홈</span>';
+    } else {
+      recentPanel.classList.add('active');
+      hideAll();
+      renderRecentHistory();
+    }
+  }
+
+  function renderRecentHistory() {
+    let panel = document.getElementById('recent-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'recent-panel';
+      document.querySelector('.content').appendChild(panel);
+    }
+    const items = recentHistory.slice().reverse().slice(0, 10);
+    panel.innerHTML = '<h3>🕐 최근 본 섹션</h3>' + (items.length === 0
+      ? '<p style="color:var(--text-muted);font-size:13px;">아직 방문한 섹션이 없어요.</p>'
+      : items.map(h => `<div class="recent-history-item" onclick="showSection('${h.section}',${h.idx})">
+          <div>${h.label}</div>
+          <div class="rh-time">${h.time}</div>
+        </div>`).join(''));
+    panel.classList.add('active');
+  }
+
+  function addToRecentHistory(section, idx, label) {
+    const entry = { section, idx, label, time: new Date().toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}) };
+    recentHistory = recentHistory.filter(h => !(h.section === section && h.idx === idx));
+    recentHistory.push(entry);
+    if (recentHistory.length > 20) recentHistory.shift();
+    localStorage.setItem('ca_recent', JSON.stringify(recentHistory));
+  }
+
+// ── 캘린더 데이터 ──
+// 새 일정 추가 시 이 배열에만 추가하면 됩니다
+const CAL_EVENTS = [
+  // type: 'promo' | 'seminar' | 'deploy' | 'deadline'
+  // section, idx: 클릭 시 이동할 섹션 (없으면 null)
+  { date: '2026-04-01', title: '리젠가드-S 온그린몰 오픈', type: 'promo',    sub: 'PSO · 셀론텍', section: 'regenguard', idx: 0 },
+  { date: '2026-04-01', title: '셀레뷰 AI 광고 런칭 (한승연)', type: 'seminar', sub: 'CRP 엘랑코', section: 'crp', idx: 5 },
+  { date: '2026-04-03', title: 'IBA 2분기 샘플링 거래처 리스트 제출 마감', type: 'deadline', sub: '인터베리알파', section: 'intervery', idx: 0 },
+  { date: '2026-04-05', title: '건국대 임상동문회 봄 세미나', type: 'seminar', sub: 'CRP · 약 60명', section: 'crp', idx: 5 },
+  { date: '2026-04-13', title: 'IBA 2분기 샘플링 패키지 발송', type: 'deploy', sub: '인터베리알파', section: 'intervery', idx: 0 },
+  { date: '2026-04-23', title: '아이해듀 웨비나 (바베시아 위험성)', type: 'seminar', sub: 'CRP 엘랑코', section: 'crp', idx: 5 },
+  { date: '2026-04-30', title: '증례모집 컨테스트 제출 마감', type: 'deadline', sub: '인터베리알파 + 노바트', section: 'common', idx: 3 },
+  { date: '2026-04-30', title: '리젠가드-S 런칭 프로모션 종료', type: 'promo', sub: '2+1 → 5+1 상시 전환', section: 'regenguard', idx: 0 },
+  { date: '2026-03-31', title: '중앙일보 기고 게재 (보호자 교육)', type: 'seminar', sub: 'CRP 엘랑코', section: 'crp', idx: 5 },
+  { date: '2026-06-01', title: '데피니트 샘플링 2차 피드백 수집', type: 'deadline', sub: '데피니트', section: 'definit', idx: 0 },
+  { date: '2026-06-30', title: 'CA 53주년 페이백 쿠폰 사용 만료', type: 'deadline', sub: '공통', section: 'common', idx: 1 },
+];
+
+const TYPE_LABEL = { promo: '프로모션', seminar: '세미나/행사', deploy: '배포', deadline: '마감' };
+
+function calSwitch(mode, btn) {
+  document.querySelectorAll('.cal-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar(mode);
+}
+
+function renderCalendar(mode) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 범위 계산
+  let rangeStart, rangeEnd;
+  if (mode === 'week') {
+    const dow = today.getDay(); // 0=일
+    rangeStart = new Date(today); rangeStart.setDate(today.getDate() - dow);
+    rangeEnd   = new Date(rangeStart); rangeEnd.setDate(rangeStart.getDate() + 6);
+  } else if (mode === 'month') {
+    rangeStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    rangeEnd   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  } else {
+    rangeStart = today;
+    rangeEnd   = new Date(today.getFullYear() + 1, 11, 31);
+  }
+
+  // 라벨 업데이트
+  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  document.getElementById('cal-range-label').textContent =
+    mode === 'all' ? '오늘 이후 전체' : `${fmt(rangeStart)} ~ ${fmt(rangeEnd)}`;
+
+  // 필터 & 정렬
+  const events = CAL_EVENTS
+    .map(e => ({ ...e, _d: new Date(e.date) }))
+    .filter(e => {
+      if (mode === 'all') return e._d >= today;
+      return e._d >= rangeStart && e._d <= rangeEnd;
+    })
+    .sort((a, b) => a._d - b._d);
+
+  const tl = document.getElementById('cal-timeline');
+  if (events.length === 0) {
+    tl.innerHTML = '<div class="tl-no-event">📭 이 기간에 일정이 없어요</div>';
+    return;
+  }
+
+  const dayNames = ['일','월','화','수','목','금','토'];
+  tl.innerHTML = events.map(e => {
+    const isPast  = e._d < today;
+    const isToday = e._d.getTime() === today.getTime();
+    const dateStr = `${e._d.getMonth()+1}/${e._d.getDate()}(${dayNames[e._d.getDay()]})`;
+    const dateClass = isPast ? 'past' : isToday ? 'today' : '';
+    const titleClass = isPast ? 'past' : '';
+    const clickAttr = e.section ? `onclick="showSection('${e.section}',${e.idx})" style="cursor:pointer;"` : '';
+    return `
+      <div class="tl-item" ${clickAttr}>
+        <div class="tl-date ${dateClass}">${dateStr}</div>
+        <div class="tl-dot dot-${e.type}"></div>
+        <div class="tl-body">
+          <div class="tl-title ${titleClass}">
+            ${e.title}
+            <span class="tl-badge badge-${e.type}">${TYPE_LABEL[e.type]}</span>
+          </div>
+          ${e.sub ? `<div class="tl-sub">${e.sub}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+  // ── INIT ──
+  loadSaved();
+
+  // 다크 모드 복원
+  if (localStorage.getItem('ca_dark') === '1') {
+    document.body.classList.add('dark-mode');
+    const toggleDarkEl = document.getElementById('toggle-dark');
+    if (toggleDarkEl) toggleDarkEl.checked = true;
+  }
+
+  // NEW 배지 복원
+  if (localStorage.getItem('ca_badges') === '0') {
+    document.getElementById('sidebar').classList.add('badges-hidden');
+    const toggleBadgesEl = document.getElementById('toggle-badges');
+    if (toggleBadgesEl) toggleBadgesEl.checked = false;
+  }
+
+  // recent-panel DOM 추가
+  (function() {
+    const panel = document.createElement('div');
+    panel.id = 'recent-panel';
+    panel.innerHTML = '<h3>🕐 최근 본 섹션</h3><p style="color:var(--text-muted);font-size:13px;">아직 방문한 섹션이 없어요.</p>';
+    document.querySelector('.content').appendChild(panel);
+  })();
+
+  hideAll();
+renderCalendar('week'); // 홈 진입 시 이번 주 일정 기본 표시
+  document.getElementById('sec-home').classList.add('active');
+  document.getElementById('breadcrumb').innerHTML = 'CA PM팀 공지사항 · <span>홈</span>';
+
+  // ── 숨김 단축키: Ctrl+Shift+E ──
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+      e.preventDefault();
+      openPwModal();
+    }
+  });
+
+  // close modal on overlay click
+  document.getElementById('file-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('pw-modal').addEventListener('click', function(e) {
+    if (e.target === this) closePwModal();
+  });
+</script>
+</body>
+</html>
