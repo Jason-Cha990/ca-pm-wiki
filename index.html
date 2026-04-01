@@ -2753,7 +2753,10 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
     document.querySelectorAll('[contenteditable]').forEach((el, i) => {
       const id = el.id || `ce-${i}`;
       if (!el.id) el.id = id;
-      data[id] = el.innerHTML;
+      data[id] = el.innerHTML
+  .replace(/<!--StartFragment-->/g, '')
+  .replace(/<!--EndFragment-->/g, '')
+  .trim();
     });
 
     // table rows (tbody)
