@@ -2424,14 +2424,34 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // 기존 JS에서 사용할 수 있도록 전역 노출
-  window._db          = db;
-  window._doc         = doc;
-  window._getDoc      = getDoc;
-  window._setDoc      = setDoc;
-  window._onSnapshot  = onSnapshot;
+  // 전역 노출
+  window._db         = db;
+  window._doc        = doc;
+  window._getDoc     = getDoc;
+  window._setDoc     = setDoc;
+  window._onSnapshot = onSnapshot;
   window._firebaseReady = true;
-  window.dispatchEvent(new Event('firebase-ready'));
+
+  // ★ 여기서 직접 데이터 로드 (타이밍 문제 해결)
+  const ref = doc(db, 'wiki', 'main');
+
+  // 최초 1회 불러오기
+  getDoc(ref).then(snap => {
+    if (snap.exists()) {
+      if (typeof _applyData === 'function') {
+        _applyData(JSON.parse(snap.data().data));
+      }
+    }
+  });
+
+  // 실시간 동기화
+  onSnapshot(ref, snap => {
+    if (snap.exists() && !document.body.classList.contains('edit-mode')) {
+      if (typeof _applyData === 'function') {
+        _applyData(JSON.parse(snap.data().data));
+      }
+    }
+  });
 </script>
 
 <script>
@@ -2713,23 +2733,8 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
   }
 
 function loadSaved() {
-  if (window._firebaseReady) {
-    const ref = window._doc(window._db, 'wiki', 'main');
-
-    // 최초 1회 불러오기
-    window._getDoc(ref).then(snap => {
-      if (snap.exists()) _applyData(JSON.parse(snap.data().data));
-    });
-
-    // 실시간 동기화 — 누군가 저장하면 자동 반영
-    window._onSnapshot(ref, snap => {
-      if (snap.exists() && !document.body.classList.contains('edit-mode')) {
-        _applyData(JSON.parse(snap.data().data));
-      }
-    });
-
-  } else {
-    // Firebase 연결 전 fallback
+  // Firebase가 처리하므로 localStorage fallback만 유지
+  if (!window._firebaseReady) {
     const raw = localStorage.getItem('ca_pm_data');
     if (!raw) return;
     try {
@@ -2974,16 +2979,7 @@ function renderCalendar(mode) {
 }
 
 // ── INIT ──
-// Firebase 준비 완료 후 데이터 로드
-if (window._firebaseReady) {
-  loadSaved();
-} else {
-  window.addEventListener('firebase-ready', () => loadSaved());
-  // 3초 안에 Firebase 안 되면 localStorage로 fallback
-  setTimeout(() => {
-    if (!window._firebaseReady) loadSaved();
-  }, 3000);
-}
+loadSaved(); // Firebase fallback용으로만 유지
 
   // 다크 모드 복원
   if (localStorage.getItem('ca_dark') === '1') {
