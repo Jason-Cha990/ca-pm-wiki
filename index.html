@@ -2973,8 +2973,17 @@ function renderCalendar(mode) {
   }).join('');
 }
 
-  // ── INIT ──
+// ── INIT ──
+// Firebase 준비 완료 후 데이터 로드
+if (window._firebaseReady) {
   loadSaved();
+} else {
+  window.addEventListener('firebase-ready', () => loadSaved());
+  // 3초 안에 Firebase 안 되면 localStorage로 fallback
+  setTimeout(() => {
+    if (!window._firebaseReady) loadSaved();
+  }, 3000);
+}
 
   // 다크 모드 복원
   if (localStorage.getItem('ca_dark') === '1') {
