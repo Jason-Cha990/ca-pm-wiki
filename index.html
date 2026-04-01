@@ -2504,9 +2504,14 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
   // 최초 1회: 데이터를 window에 저장하고 이벤트 발생
   getDoc(ref).then(snap => {
     if (snap.exists()) {
+      console.log('[Firebase] ✅ 데이터 로드 성공, 버전:', JSON.parse(snap.data().data)._version);
       window._firestoreData = JSON.parse(snap.data().data);
       window.dispatchEvent(new Event('firestore-loaded'));
+    } else {
+      console.log('[Firebase] ❌ 문서 없음');
     }
+  }).catch(e => {
+    console.log('[Firebase] ❌ getDoc 에러:', e.message);
   });
 
   // 실시간 동기화
@@ -2809,7 +2814,12 @@ function loadSaved() {
 }
 
 function _applyData(data) {
-  if (!data || data._version !== DATA_VERSION) return;
+  console.log('[_applyData] 호출됨, 버전:', data ? data._version : 'null', '/ DATA_VERSION:', DATA_VERSION);
+  if (!data || data._version !== DATA_VERSION) {
+    console.log('[_applyData] ❌ 버전 불일치 또는 데이터 없음 → 종료');
+    return;
+  }
+  console.log('[_applyData] ✅ 적용 시작');
 
   // editable cells
   document.querySelectorAll('[contenteditable]').forEach((el, i) => {
@@ -3045,6 +3055,7 @@ function renderCalendar(mode) {
   // ── 자동 id 부여 (편집 안정화) ──
   function assignEditableIds() {
     let counter = 0;
+    console.log('[INIT] assignEditableIds 시작');
     document.querySelectorAll(
       '.card-body p, .card-body li, .notice, .date-entry-label, .key-msg-text, .usp-text, .usp-title'
     ).forEach(el => {
@@ -3074,8 +3085,13 @@ loadSaved();         // localStorage fallback
 
 // Firestore 데이터 로드 이벤트 처리
 window.addEventListener('firestore-loaded', () => {
+  console.log('[INIT] ✅ firestore-loaded 이벤트 수신');
   if (window._firestoreData) {
+    console.log('[INIT] _applyData 호출 시작');
     _applyData(window._firestoreData);
+    console.log('[INIT] _applyData 완료');
+  } else {
+    console.log('[INIT] ❌ _firestoreData 없음');
   }
 });
 
