@@ -639,6 +639,43 @@
 
 body.dark-mode .tl-item { border-bottom-color: var(--border); }
 body.dark-mode .cal-tab { background: #2a2a2a; }
+
+  /* ── 편집 툴바 ── */
+  #edit-toolbar-float {
+    display: none;
+    position: fixed;
+    top: 54px; left: 50%; transform: translateX(-50%);
+    z-index: 1000;
+    background: #1a1a1a; border-radius: 10px;
+    padding: 6px 10px; gap: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    flex-wrap: wrap; align-items: center;
+  }
+  body.edit-mode #edit-toolbar-float { display: flex; }
+  .tb-btn {
+    background: none; border: none; color: #fff;
+    cursor: pointer; padding: 5px 8px; border-radius: 6px;
+    font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .tb-btn:hover { background: rgba(255,255,255,0.15); }
+  .tb-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 4px; }
+  .tb-color {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer; flex-shrink: 0; display: inline-block;
+  }
+  .tb-select {
+    background: #333; color: #fff; border: none;
+    border-radius: 6px; padding: 4px 6px; font-size: 12px; cursor: pointer;
+  }
+  body.edit-mode .editable-text:hover {
+    outline: 1px dashed var(--edit-border); border-radius: 3px; cursor: text;
+  }
+  body.edit-mode .editable-text:focus {
+    outline: 2px solid var(--edit-border); border-radius: 3px;
+    background: var(--edit-highlight);
+  }
 </style>
 </head>
 <body>
@@ -650,6 +687,35 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
     <button class="btn btn-save" onclick="saveAll()">💾 저장</button>
     <button class="btn btn-cancel" onclick="toggleEditMode(false)">✕ 취소</button>
   </div>
+
+<!-- 편집 툴바 -->
+<div id="edit-toolbar-float">
+  <button class="tb-btn" onclick="fmt('bold')" title="굵게"><b>B</b></button>
+  <button class="tb-btn" onclick="fmt('italic')" title="기울임"><i>I</i></button>
+  <button class="tb-btn" onclick="fmt('underline')" title="밑줄"><u>U</u></button>
+  <button class="tb-btn" onclick="fmt('strikeThrough')" title="취소선"><s>S</s></button>
+  <div class="tb-sep"></div>
+  <select class="tb-select" onchange="fmtSize(this.value)" title="글씨 크기">
+    <option value="">크기</option>
+    <option value="1">10px</option>
+    <option value="2">12px</option>
+    <option value="3">14px</option>
+    <option value="4">16px</option>
+    <option value="5">18px</option>
+    <option value="6">22px</option>
+  </select>
+  <div class="tb-sep"></div>
+  <span style="color:#fff;font-size:11px;">색:</span>
+  <div class="tb-color" style="background:#1a1a1a;" onclick="fmtColor('#1a1a1a')" title="검정"></div>
+  <div class="tb-color" style="background:#2d6a4f;" onclick="fmtColor('#2d6a4f')" title="녹색"></div>
+  <div class="tb-color" style="background:#e07a3a;" onclick="fmtColor('#e07a3a')" title="주황"></div>
+  <div class="tb-color" style="background:#e53935;" onclick="fmtColor('#e53935')" title="빨강"></div>
+  <div class="tb-color" style="background:#1a4a7a;" onclick="fmtColor('#1a4a7a')" title="파랑"></div>
+  <div class="tb-color" style="background:#8a8a8a;" onclick="fmtColor('#8a8a8a')" title="회색"></div>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="fmt('removeFormat')" title="서식 제거">✕ 서식</button>
+</div>
+
 </div>
 
 <!-- PASSWORD MODAL -->
@@ -2580,7 +2646,7 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
       el.contentEditable = on ? 'true' : 'false';
     });
     // 본문 텍스트 (p, li, notice)
-    document.querySelectorAll('.card-body p, .card-body li, .notice').forEach(el => {
+    document.querySelectorAll('.editable-text').forEach(el => {
       el.contentEditable = on ? 'true' : 'false';
     });
     // recent update 버튼
@@ -2978,7 +3044,34 @@ function renderCalendar(mode) {
   }).join('');
 }
 
+  // ── 자동 id 부여 (편집 안정화) ──
+  function assignEditableIds() {
+    let counter = 0;
+    document.querySelectorAll(
+      '.card-body p, .card-body li, .notice, .date-entry-label, .key-msg-text, .usp-text, .usp-title'
+    ).forEach(el => {
+      if (!el.id) {
+        const section = el.closest('.product-section');
+        const sectionId = section ? section.id : 'global';
+        el.id = `et-${sectionId}-${counter++}`;
+      }
+      el.classList.add('editable-text');
+    });
+  }
+
+  // ── 편집 툴바 함수 ──
+  function fmt(cmd) {
+    document.execCommand(cmd, false, null);
+  }
+  function fmtSize(size) {
+    if (size) document.execCommand('fontSize', false, size);
+  }
+  function fmtColor(color) {
+    document.execCommand('foreColor', false, color);
+  }
+
 // ── INIT ──
+assignEditableIds(); // 편집 가능 요소 id 자동 부여
 loadSaved(); // Firebase fallback용으로만 유지
 
   // 다크 모드 복원
