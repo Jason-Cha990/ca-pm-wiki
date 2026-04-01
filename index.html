@@ -2749,14 +2749,17 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
   function saveAll() {
     const data = { _version: DATA_VERSION };
 
-    // editable cells
-    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
-      const id = el.id || `ce-${i}`;
-      if (!el.id) el.id = id;
-      data[id] = el.innerHTML
-  .replace(/<!--StartFragment-->/g, '')
-  .replace(/<!--EndFragment-->/g, '')
-  .trim();
+    // editable cells (테이블 셀 + 본문 텍스트)
+    const saveEls = new Set([
+      ...document.querySelectorAll('[contenteditable]'),
+      ...document.querySelectorAll('.editable-text')
+    ]);
+    saveEls.forEach(el => {
+      if (!el.id) return;
+      data[el.id] = el.innerHTML
+        .replace(/<!--StartFragment-->/g, '')
+        .replace(/<!--EndFragment-->/g, '')
+        .trim();
     });
 
     // table rows (tbody)
@@ -2824,11 +2827,18 @@ function _applyData(data) {
   }
   console.log('[_applyData] ✅ 적용 시작');
 
-  // editable cells
-  document.querySelectorAll('[contenteditable]').forEach((el, i) => {
-    const id = el.id || `ce-${i}`;
-    if (!el.id) el.id = id;
-    if (data[id] !== undefined) el.innerHTML = data[id];
+  // editable cells (테이블 셀 + 본문 텍스트)
+  const editableEls = new Set([
+    ...document.querySelectorAll('[contenteditable]'),
+    ...document.querySelectorAll('.editable-text')
+  ]);
+  editableEls.forEach((el, i) => {
+    if (!el.id) return; // id 없는 요소는 스킵
+    if (data[el.id] !== undefined) {
+      el.innerHTML = data[el.id]
+        .replace(/<!--StartFragment-->/g, '')
+        .replace(/<!--EndFragment-->/g, '');
+    }
   });
 
   // table rows
