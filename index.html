@@ -2498,24 +2498,22 @@ body.dark-mode .cal-tab { background: #2a2a2a; }
   window._onSnapshot = onSnapshot;
   window._firebaseReady = true;
 
-  // ★ 여기서 직접 데이터 로드 (타이밍 문제 해결)
+  // 데이터 로드 — window에 저장 후 일반 스크립트에서 처리
   const ref = doc(db, 'wiki', 'main');
 
-  // 최초 1회 불러오기
+  // 최초 1회: 데이터를 window에 저장하고 이벤트 발생
   getDoc(ref).then(snap => {
     if (snap.exists()) {
-      if (typeof _applyData === 'function') {
-        _applyData(JSON.parse(snap.data().data));
-      }
+      window._firestoreData = JSON.parse(snap.data().data);
+      window.dispatchEvent(new Event('firestore-loaded'));
     }
   });
 
   // 실시간 동기화
   onSnapshot(ref, snap => {
     if (snap.exists() && !document.body.classList.contains('edit-mode')) {
-      if (typeof _applyData === 'function') {
-        _applyData(JSON.parse(snap.data().data));
-      }
+      window._firestoreData = JSON.parse(snap.data().data);
+      window.dispatchEvent(new Event('firestore-loaded'));
     }
   });
 </script>
@@ -3072,7 +3070,14 @@ function renderCalendar(mode) {
 
 // ── INIT ──
 assignEditableIds(); // 편집 가능 요소 id 자동 부여
-loadSaved(); // Firebase fallback용으로만 유지
+loadSaved();         // localStorage fallback
+
+// Firestore 데이터 로드 이벤트 처리
+window.addEventListener('firestore-loaded', () => {
+  if (window._firestoreData) {
+    _applyData(window._firestoreData);
+  }
+});
 
   // 다크 모드 복원
   if (localStorage.getItem('ca_dark') === '1') {
